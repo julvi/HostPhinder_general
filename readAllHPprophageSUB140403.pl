@@ -5,14 +5,14 @@ use strict;
 
 use Data::Dumper;
 
-my $fnas = "PROPHAGES/HostPhinder/results/prophage_fnas";
+my $fnas = "../PROPHAGES/HostPhinder/results/prophage_fnas";
 my (%frac_qFreq, %frac_dFreq); #These hashes of array will count the frequency of right [1]and wrong [0]predictions per each value of frac_q and frac_d respectively
 my ( $frac_qMAX, $frac_qmin, $frac_dMAX, $frac_dmin ) = ( 0 ) x 4;
 
 
 ################################################################################ READ tax_info ################################################################################
 
-open ( IN, '<', "PROPHAGES/tax_info" ) or die "Can't open the file: $!";
+open ( IN, '<', "../PROPHAGES/tax_info" ) or die "Can't open the file: $!";
 #Save the file into an array
 my @taxonomies;
 while ( <IN> ) {
@@ -62,36 +62,33 @@ while ( my $bact = readdir ( FNAS ) ) {
 			}
 #-----------------------------------------------------------------			
 ################################################## Sort array of arrays according to frac_q ###########################################################################
-
-			#Reverse sort the array of arrays according to the 6th element of each array (frac_q)
-			my @frac_qAoA = sort { $b -> [5] <=> $a -> [5] } @HPpredictions;
-
 			my $first_frac_q = "";
 			my $new_frac_q = 0;
-			#if $i => 1 means that there is a least one result: see while loop up
+			my $first_frac_d = "";
+			my $new_frac_d = 0;
 			if ( $i == 1 ) {
-				$first_frac_q = $1 if $frac_qAoA[0][10] =~ m/"(.*?)"/;
-				$new_frac_q = $frac_qAoA[0][5] + 0;
-				
-				#print "$first_frac_q\n";
-				$frac_qMAX = max($frac_qMAX, $new_frac_q);
-				if ( $frac_qmin == 0 ) {
-					$frac_qmin = $new_frac_q;
-				} else {
-					$frac_qmin = min($frac_qmin, $new_frac_q);
-				}
-				
-				
-			}
-################################################## Sort array of arrays according to frac_d ###########################################################################
+				my @results_Q = sort_array_by_column ( 5, \@HPpredictions, $frac_qMAX, $frac_qmin );	#column number, reference to HPprediction, $frac_MAX, $frac_min
+				# Return: prediction, frac, frac_MAX, $frac_min
+				$first_frac_q = shift @results_Q;
+				$new_frac_q = shift @results_Q;
+				$frac_qMAX = shift @results_Q;
+				$frac_qmin = shift @results_Q;
+				my @results_D = sort_array_by_column ( 6, \@HPpredictions, $frac_dMAX, $frac_dmin );
+				$first_frac_d = shift @results_D;
+				$new_frac_d = shift @results_D;
+				$frac_dMAX = shift @results_D;
+				$frac_dmin = shift @results_D;
 
+			}
+
+################################################## Sort array of arrays according to frac_d ###########################################################################
+=pod
 
 			#Reverse sort the array of arrays according to the 7th element of each array (frac_d)
 			my @frac_dAoA = sort { $b -> [6] <=> $a -> [6] } @HPpredictions;
 
 		
-			my $first_frac_d = "";
-			my $new_frac_d = 0;
+			
 			if ( $i == 1 ) {
 				$first_frac_d = $1 if $frac_dAoA[0][10] =~ m/"(.*?)"/;
 				$new_frac_d = $frac_dAoA[0][6];
@@ -106,7 +103,7 @@ while ( my $bact = readdir ( FNAS ) ) {
 				
 				
 			}
-
+=cut
 ################################################################################################################################################################################
 #READ tax_info
 ################################################################################################################################################################################
@@ -134,7 +131,7 @@ while ( my $bact = readdir ( FNAS ) ) {
 					$frac_qFreq{$new_frac_q}[1] += 1;
 					$frac_qFreq{$new_frac_q}[0] += 1;
 					$frac_dFreq{$new_frac_d}[1] += 1;
-					$frac_dFreq{$new_frac_d}[0] += 0;
+					$frac_dFreq{$new_frac_d}[0] += 1;
 				} elsif ( $right_species eq $first_frac_q ) {
 					#print "The highest frac_q gives the right species: $right_species, $first_frac_q\n\n";
 					$frac_qFreq{$new_frac_q}[1] += 1;
@@ -207,27 +204,34 @@ sub min {	#returns minimum of two numnber
 	return ( $min );
 }
 #----------
-sub sort_array_by_column {	#column number, reference to HPprediction
+sub sort_array_by_column {	#column number, reference to HPprediction, $frac_MAX, $frac_min
 	my $column = shift;
 	my $HPpredictions_ref = shift;
-	my @sortedAoA = sort { $b -> [5] <=> $a -> [5] } @{ $HPpredictions_ref };
+	my $frac_MAX = shift;
+	my $frac_min = shift;
+	my @sortedAoA = sort { $b -> [$column] <=> $a -> [$column] } @{ $HPpredictions_ref };
 	my $first_frac = "";
 	my $new_frac = 0;
-	if ( $i == 1 ) {
-		$first_frac = $1 if $sortedAoA[0][10] =~ m/"(.*?)"/;
-		$new_frac = $frac_qAoA[0][5] + 0;
-				
+	my @return;
+	
+	$first_frac = $1 if $sortedAoA[0][10] =~ m/"(.*?)"/;
+	push ( @return, $first_frac );
+	$new_frac = $sortedAoA[0][$column] + 0;
+	push ( @return, $new_frac );		
 		#print "$first_frac_q\n";
-		$frac_qMAX = max($frac_qMAX, $new_frac_q);
-		if ( $frac_qmin == 0 ) {
-			$frac_qmin = $new_frac_q;
-		} else {
-			$frac_qmin = min($frac_qmin, $new_frac_q);
-		}			
+	$frac_MAX = max($frac_MAX, $new_frac);
+	push ( @return, $frac_MAX );
+	if ( $frac_min == 0 ) {
+		$frac_min = $new_frac;
+	} else {
+		$frac_min = min($frac_min, $new_frac);
 	}
-
-
+	push ( @return, $frac_min );			
+	
+# Return: prediction, frac, frac_MAX, $frac_min
+	return @return;
 }
+=pod
 #Reverse sort the array of arrays according to the 6th element of each array (frac_q)
 			my @frac_qAoA = sort { $b -> [5] <=> $a -> [5] } @HPpredictions;
 
@@ -251,8 +255,7 @@ sub sort_array_by_column {	#column number, reference to HPprediction
 
 
 
-
-
+=cut
 sub makeintervals { #arguments: $frac_min, $frac_max, \%frac_Freq
 	my $min = shift;
 	my $max = shift;
@@ -289,6 +292,7 @@ sub makeintervals { #arguments: $frac_min, $frac_max, \%frac_Freq
 		#$matchratio = $matchesXrange{$key}[1]/$matchesXrange{$key}[0];
 	    #print "$range: @{ $matchesXrange{$range} }\n";
 	    #print "$matchesXrange{$key}[1]/$matchesXrange{$key}[0]\n";
+	    print "$matchesXrange{$key}[1]/$matchesXrange{$key}[0]\n";
 	    $matchratio{$key} = $matchesXrange{$key}[1]/$matchesXrange{$key}[0];
 	    #push ( @matchratio, $matchesXrange{$range}[1]/$matchesXrange{$range}[0] ); 
 	    #print "$matchratio\n";
