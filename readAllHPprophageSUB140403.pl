@@ -69,19 +69,17 @@ while ( my $bact = readdir ( FNAS ) ) {
 				my @sortedAoA_Q;
 				my @results_Q = sort_array_by_column ( 5, \@HPpredictions, \@sortedAoA_Q, $frac_qMAX, $frac_qmin );	#column number, reference to HPprediction, $frac_MAX, $frac_min
 				# Return: prediction, frac, frac_MAX, $frac_min
-				#$first_frac_q = shift @results_Q;
+		
 				$first_frac_q = $1 if $sortedAoA_Q[0][10] =~ m/"(.*?)"/;
-				$new_frac_q = shift @results_Q;
-				$frac_qMAX = shift @results_Q;
-				$frac_qmin = shift @results_Q;
+				( $new_frac_q, $frac_qMAX, $frac_qmin ) = @results_Q;
+			
 				#----------------------------------------------------- Sort array of arrays according to frac_d ------------------------------------------------------------
 				my @sortedAoA_D;
 				my @results_D = sort_array_by_column ( 6, \@HPpredictions, \@sortedAoA_D, $frac_dMAX, $frac_dmin );
-				#$first_frac_d = shift @results_D;
+			
 				$first_frac_d = $1 if $sortedAoA_D[0][10] =~ m/"(.*?)"/;
-				$new_frac_d = shift @results_D;
-				$frac_dMAX = shift @results_D;
-				$frac_dmin = shift @results_D;
+				( $new_frac_d, $frac_dMAX, $frac_dmin ) = @results_D;
+			
 
 ################################################################################################################################################################################
 #READ tax_info
@@ -199,9 +197,7 @@ sub sort_array_by_column {	#column number, reference to HPprediction, reference 
 sub makeintervals { 
 #arguments: $frac_min, $frac_max, \%frac_Freq
 	my ( $min, $max, $frac_Freq_ref ) = @_;
-	#my $min = shift;
-	#my $max = shift;
-	#my $frac_Freq_ref = shift;
+	
 	my $range = $max - $min;
 	#divide the frac range into 10 bins
 	my $range_size = $range / 10;
