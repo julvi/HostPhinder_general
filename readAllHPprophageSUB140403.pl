@@ -66,15 +66,19 @@ while ( my $bact = readdir ( FNAS ) ) {
 			#after the first while loop (read the first line), $i == 1 and here we have the results
 			if ( $i == 1 ) {
 				#----------------------------------------------------- Sort array of arrays according to frac_q ------------------------------------------------------------
-				my @results_Q = sort_array_by_column ( 5, \@HPpredictions, $frac_qMAX, $frac_qmin );	#column number, reference to HPprediction, $frac_MAX, $frac_min
+				my @sortedAoA_Q;
+				my @results_Q = sort_array_by_column ( 5, \@HPpredictions, \@sortedAoA_Q, $frac_qMAX, $frac_qmin );	#column number, reference to HPprediction, $frac_MAX, $frac_min
 				# Return: prediction, frac, frac_MAX, $frac_min
-				$first_frac_q = shift @results_Q;
+				#$first_frac_q = shift @results_Q;
+				$first_frac_q = $1 if $sortedAoA_Q[0][10] =~ m/"(.*?)"/;
 				$new_frac_q = shift @results_Q;
 				$frac_qMAX = shift @results_Q;
 				$frac_qmin = shift @results_Q;
 				#----------------------------------------------------- Sort array of arrays according to frac_d ------------------------------------------------------------
-				my @results_D = sort_array_by_column ( 6, \@HPpredictions, $frac_dMAX, $frac_dmin );
-				$first_frac_d = shift @results_D;
+				my @sortedAoA_D;
+				my @results_D = sort_array_by_column ( 6, \@HPpredictions, \@sortedAoA_D, $frac_dMAX, $frac_dmin );
+				#$first_frac_d = shift @results_D;
+				$first_frac_d = $1 if $sortedAoA_D[0][10] =~ m/"(.*?)"/;
 				$new_frac_d = shift @results_D;
 				$frac_dMAX = shift @results_D;
 				$frac_dmin = shift @results_D;
@@ -168,21 +172,15 @@ sub min {	#returns minimum of two numnber
 	return ( $min );
 }
 
-sub sort_array_by_column {	#column number, reference to HPprediction, $frac_MAX, $frac_min
-	my $column = shift;
-	my $HPpredictions_ref = shift;
-	my $frac_MAX = shift;
-	my $frac_min = shift;
+sub sort_array_by_column {	#column number, reference to HPprediction, reference to the sorted array, $frac_MAX, $frac_min
+	my ( $column, $HPpredictions_ref, $sortedAoA_ref, $frac_MAX, $frac_min ) = @_;
 
-	my @sortedAoA = sort { $b -> [$column] <=> $a -> [$column] } @{ $HPpredictions_ref };
+	@$sortedAoA_ref = sort { $b -> [$column] <=> $a -> [$column] } @{ $HPpredictions_ref };
 
-	my $first_frac = "";
 	my $new_frac = 0;
 	my @return;
-	
-	$first_frac = $1 if $sortedAoA[0][10] =~ m/"(.*?)"/;
-	push ( @return, $first_frac );
-	$new_frac = $sortedAoA[0][$column] + 0;
+
+	$new_frac = $$sortedAoA_ref[0][$column] + 0;
 	push ( @return, $new_frac );		
 	#save the max frac and the min frac met so far
 	$frac_MAX = max($frac_MAX, $new_frac);
@@ -194,16 +192,16 @@ sub sort_array_by_column {	#column number, reference to HPprediction, $frac_MAX,
 	}
 	push ( @return, $frac_min );			
 	
-# Return: top prediction, new frac, $frac_MAX, $frac_min
+# Return: new frac, $frac_MAX, $frac_min
 	return @return;
 }
 
 sub makeintervals { 
 #arguments: $frac_min, $frac_max, \%frac_Freq
-
-	my $min = shift;
-	my $max = shift;
-	my $frac_Freq_ref = shift;
+	my ( $min, $max, $frac_Freq_ref ) = @_;
+	#my $min = shift;
+	#my $max = shift;
+	#my $frac_Freq_ref = shift;
 	my $range = $max - $min;
 	#divide the frac range into 10 bins
 	my $range_size = $range / 10;
