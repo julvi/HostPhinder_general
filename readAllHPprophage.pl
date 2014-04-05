@@ -5,14 +5,14 @@ use strict;
 
 use Data::Dumper;
 
-my $fnas = "PROPHAGES/HostPhinder/results/prophage_fnas";
+my $fnas = "../PROPHAGES/HostPhinder/results/prophage_fnas";
 my (%frac_qFreq, %frac_dFreq); #These hashes of array will count the frequency of right [1]and wrong [0]predictions per each value of frac_q and frac_d respectively
 my ( $frac_qMAX, $frac_qmin, $frac_dMAX, $frac_dmin ) = ( 0 ) x 4;
 
 
 ################################################################################ READ tax_info ################################################################################
 
-open ( IN, '<', "PROPHAGES/tax_info" ) or die "Can't open the file: $!";
+open ( IN, '<', "../PROPHAGES/tax_info" ) or die "Can't open the file: $!";
 #Save the file into an array
 my @taxonomies;
 while ( <IN> ) {
@@ -31,17 +31,17 @@ while ( my $bact = readdir ( FNAS ) ) {
 	while ( my $NCid = readdir ( BACT ) ) {
 		next if ( $NCid =~ m/^\./ );
 		my $NCN += 1;
-		print "NC: $NCN\n";
+		#print "NC: $NCN\n";
 		opendir ( NC, "$fnas/$bact/$NCid" );
 		my $prophageN = 0;
 		while ( my $prophage = readdir ( NC ) ) {
 			next if ( $prophage =~ m/^\./ );
 			$prophageN += 1;
-			print "prophage: $prophageN\n";
+			#print "prophage: $prophageN\n";
 			my $pfilename = "$fnas/$bact/$NCid/$prophage";
 			#save the name of the folders (bacterium and NC)
 			my $sp_NC_names = $1 if "$bact/$NCid" =~ m/(.*?)_1$/;
-			print "\nFolder name: " . $sp_NC_names . "\n\n";
+			#print "\nFolder name: " . $sp_NC_names . "\n\n";
 			#print "$pfilename\n";
 ################################################################################################################################################################################
 #SORT HostPhinder PREDICTIONS
@@ -57,7 +57,7 @@ while ( my $bact = readdir ( FNAS ) ) {
 			while ( defined ( my $line = <IN> ) ) {
 				next if $line =~ m/^Template/;
 				$HPpredictions[$i] = [ split " ", $line ];
-				$i = 1;
+				$i++;
 
 			}
 			if ( $i == 1 ) {
@@ -81,7 +81,7 @@ while ( my $bact = readdir ( FNAS ) ) {
 				$new_frac_q = $frac_qAoA[0][5] + 0;
 				#$frac_qFreq{$new_frac_q} += 1;
 #				print Dumper \@frac_qAoA;
-				print "$first_frac_q\n";
+				#print "$first_frac_q\n";
 				$frac_qMAX = max($frac_qMAX, $new_frac_q);
 				if ( $frac_qmin == 0 ) {
 					$frac_qmin = $new_frac_q;
@@ -96,6 +96,8 @@ while ( my $bact = readdir ( FNAS ) ) {
 
 			#Reverse sort the array of arrays according to the 7th element of each array (frac_d)
 			my @frac_dAoA = sort { $b -> [6] <=> $a -> [6] } @HPpredictions;
+			print Dumper \@HPpredictions;
+			#print Dumper \@frac_dAoA;
 
 			#print the entire array of arrays
 			#print the sorted array
@@ -115,7 +117,7 @@ while ( my $bact = readdir ( FNAS ) ) {
 				$new_frac_d = $frac_dAoA[0][6];
 				#$frac_dFreq{$new_frac_d} += 1;
 				#print "$frac_dAoA[0][6]\n";
-				print "$first_frac_d\n";
+				#print "$first_frac_d\n";
 				$frac_dMAX = max($frac_dMAX, $new_frac_d);
 				if ( $frac_dmin == 0 ) {
 					$frac_dmin = $new_frac_d;
@@ -144,7 +146,7 @@ while ( my $bact = readdir ( FNAS ) ) {
 					if ( $taxonomies[$i][0] =~ m/\/panfs1\/cge\/people\/henrike\/genomes\/tmp\/(.*?)\.gbk/ && $1 eq $sp_NC_names ) {
 						$right_species = $taxonomies[$i][6];
 						#print "tax info file:\n";
-						print "#########################$1\t$right_species\n\n";
+						#print "#########################$1\t$right_species\n\n";
 						#for my $j ( 0 .. $#{ $AoA[$i] }) {
 						#	print $AoA[$i][$j] . "\n";
 						#}
@@ -159,25 +161,25 @@ while ( my $bact = readdir ( FNAS ) ) {
 			#my ( $genusRS, $genus_fq, $genus_fd) ;
 			if ( $i == 1 ) {
 				if ( $right_species eq $first_frac_q && $right_species eq $first_frac_d ) {
-					print "Both the highest frac_q and highest frac_d give the right species: $right_species, $first_frac_q, $first_frac_d\n\n";
+					#print "Both the highest frac_q and highest frac_d give the right species: $right_species, $first_frac_q, $first_frac_d\n\n";
 					$frac_qFreq{$new_frac_q}[1] += 1;
 					$frac_qFreq{$new_frac_q}[0] += 0;
 					$frac_dFreq{$new_frac_d}[1] += 1;
 					$frac_dFreq{$new_frac_d}[0] += 0;
 				} elsif ( $right_species eq $first_frac_q ) {
-					print "The highest frac_q gives the right species: $right_species, $first_frac_q\n\n";
+					#print "The highest frac_q gives the right species: $right_species, $first_frac_q\n\n";
 					$frac_qFreq{$new_frac_q}[1] += 1;
 					$frac_qFreq{$new_frac_q}[0] += 0;
 					$frac_dFreq{$new_frac_d}[0] += 1;
 					$frac_dFreq{$new_frac_d}[1] += 0;
 				} elsif ( $right_species eq $first_frac_d ) {
-					print "The highest frac_d gives the right species: $right_species, $first_frac_d\n\n";
+					#print "The highest frac_d gives the right species: $right_species, $first_frac_d\n\n";
 					$frac_dFreq{$new_frac_d}[1] += 1;
 					$frac_dFreq{$new_frac_d}[0] += 0;
 					$frac_qFreq{$new_frac_q}[0] += 1;
 					$frac_qFreq{$new_frac_q}[1] += 0;
 				} else {
-					print "No match\n\n";
+					#print "No match\n\n";
 					$frac_qFreq{$new_frac_q}[0] += 1;
 					$frac_qFreq{$new_frac_q}[1] += 0;
 					$frac_dFreq{$new_frac_d}[0] += 1;
@@ -192,9 +194,9 @@ while ( my $bact = readdir ( FNAS ) ) {
 
 }
 
-foreach my $frac ( sort ( keys %frac_qFreq ) ) {
-     print "$frac: @{ $frac_qFreq{$frac} }\n"
- }
+#foreach my $frac ( sort ( keys %frac_qFreq ) ) {
+#     print "$frac: @{ $frac_qFreq{$frac} }\n"
+# }
 =pod
 #sort hash keys
 $Data::Dumper::Sortkeys = sub {
@@ -236,18 +238,18 @@ for my $i ( 0 .. 9 ) {
         }
         
 	}
-	print "$howmany\n";
+	#print "$howmany\n";
 	$frac_qmin += $q_range_size;
-	print $frac_qmin ."\n";
+	#print $frac_qmin ."\n";
 }
 
 #foreach my $key (sort ( keys %matchesXrange) ) {
 #        print "$key\t$matchesXrange{$key}\n";
 # }
 
-foreach my $range ( sort ( keys %matchesXrange ) ) {
-     print "$range: @{ $matchesXrange{$range} }\n"
- }
+#foreach my $range ( sort ( keys %matchesXrange ) ) {
+ #    print "$range: @{ $matchesXrange{$range} }\n"
+ #}
 
 =pod
 

@@ -55,7 +55,7 @@ while ( my $bact = readdir ( FNAS ) ) {
 			while ( defined ( my $line = <IN> ) ) {
 				next if $line =~ m/^Template/;
 				$HPpredictions[$i] = [ split " ", $line ];
-				$i = 1;
+				$i++;
 
 			}
 
@@ -63,15 +63,30 @@ while ( my $bact = readdir ( FNAS ) ) {
 
 			my ( $new_frac_q, $new_frac_d ) = ( 0 ) x 2;
 		
-			#after the first while loop (read the first line), $i == 1 and here we have the results
-			if ( $i == 1 ) {
+			#only if we have results
+			if ( $i >= 1 ) {
 				#----------------------------------------------------- Sort array of arrays according to frac_q ------------------------------------------------------------
 				my @sortedAoA_Q;
 				my @results_Q = sort_array_by_column ( 5, \@HPpredictions, \@sortedAoA_Q, $frac_qMAX, $frac_qmin );	#column number, reference to HPprediction, $frac_MAX, $frac_min
 				# Return: prediction, frac, frac_MAX, $frac_min
-		
+				#print Dumper \@sortedAoA_Q;
+
+				for my $i ( 0 .. 9 ) {
+					print "$sortedAoA_Q[$i][10]\n" if defined ( $sortedAoA_Q[$i][10] );
+					print "$i\n";
+				}
+				print "*******************\n";
 				$first_frac_q = $1 if $sortedAoA_Q[0][10] =~ m/"(.*?)"/;
 				( $new_frac_q, $frac_qMAX, $frac_qmin ) = @results_Q;
+				my @first_ten;
+				for my $i ( 0 .. 9 ) {
+					push ( @first_ten, $1 ) if defined ( $sortedAoA_Q[$i][10] )=~ m/"(.*?)"/;
+				}
+				print join(", ", @first_ten);
+
+				#my $first = mode (\@first_ten);
+				
+				#print "***$first\n";
 			
 				#----------------------------------------------------- Sort array of arrays according to frac_d ------------------------------------------------------------
 				my @sortedAoA_D;
@@ -192,6 +207,18 @@ sub sort_array_by_column {	#column number, reference to HPprediction, reference 
 	
 # Return: new frac, $frac_MAX, $frac_min
 	return @return;
+}
+
+
+
+
+sub mode {
+	my $array_ref = shift;
+	my %counts;
+	$counts{$_}++ for  @{$array_ref};
+	my @sorted_array = sort { $counts{$b} <=> $counts{$a} } keys %counts;
+	my $first = $sorted_array[0];
+	return $first;
 }
 
 sub makeintervals { 
