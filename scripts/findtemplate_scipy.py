@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Run with /tools/opt/anaconda/bin/python
+# On cge-s2 run with /tools/opt/anaconda/bin/python
 
 #
 # Import libraries
@@ -11,7 +11,6 @@ import os
 from math import sqrt, pow
 import scipy
 from scipy.stats import norm
-#from optparse import OptionParser
 from operator import itemgetter
 import re
 import cPickle as pickle
@@ -57,6 +56,9 @@ parser.add_argument("-x", "--prefix", type=str, default='', help="prefix")
 parser.add_argument("-p", "--pickleinput", action="store_true", help="use pickle\
  input, on by default, option  kept for backwords compatibility") 
 
+# The first hit is the one to which most of query kmers mathch to
+# with this option (not currently working) the matching k-mers are then eliminated
+# from the search
 parser.add_argument("-w", "--winnertakesitall", dest="wta", 
 action="store_true", help="kmer hits are only assigned to most similar template")
 
@@ -148,6 +150,7 @@ template_tot_len = 0
 template_tot_ulen = 0
 Ntemplates = 0
 #length added
+#print templates_ulengths
 for name in templates_lengths:
   template_tot_len  += templates_lengths[name]
   template_tot_ulen += templates_ulengths[name]
