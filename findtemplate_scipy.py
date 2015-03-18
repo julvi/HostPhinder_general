@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Run with /tools/opt/anaconda/bin/python
+# On cge-s2 run with /tools/opt/anaconda/bin/python
 
 #
 # Import libraries
@@ -11,7 +11,6 @@ import os
 from math import sqrt, pow
 import scipy
 from scipy.stats import norm
-#from optparse import OptionParser
 from operator import itemgetter
 import re
 import cPickle as pickle
@@ -54,29 +53,28 @@ parser.add_argument("-x", "--prefix", type=str, default='', help="prefix")
 #parser.add_option("-a", "--printall", dest="printall",action="store_true", 
 #help="Print matches to all templates in templatefile unsorted") 
 
-parser.add_argument("-p", "--pickleinput", action="store_true", help="use pickle\
- input, on by default, option  kept for backwords compatibility") 
+parser.add_argument("-p", "--pickleinput", action="store_true",
+ help="use pickle input on by default, option kept for backwords compatibility") 
 
-parser.add_argument("-w", "--winnertakesitall", dest="wta", 
-action="store_true", help="kmer hits are only assigned to most similar template")
+# The first hit is the one to which most of query kmers mathch to
+# with this option (not currently working) the matching k-mers are then eliminated
+# from the search
+parser.add_argument("-w", "--winnertakesitall", dest="wta", action="store_true",
+ help="kmer hits are only assigned to most similar template")
 
-parser.add_argument("-e", "--evalue", type=float, default=0.05, help="Maximum E-value")
+parser.add_argument("-e", "--evalue", type=float, default=0.05,
+ help="Maximum E-value")
 
 args = parser.parse_args()
-
 #
 # set up prefix filtering
 #
-
 prefix = args.prefix
 prefixlen = len(prefix)
-
 #
 #
 #
-
 evalue = args.evalue
-
 # 
 # Open files 
 # 
@@ -92,11 +90,11 @@ if args.templatefile != None:
   if args.pickleinput == True:
     templatefile = open(args.templatefile+".p", "rb" )
     templatefile_lengths = open(args.templatefile+".len.p", "rb" )
-    try:
-      templatefile_ulengths = open(args.templatefile+".ulen.p", "rb" )
-    except:
+    #try:
+    templatefile_ulengths = open(args.templatefile+".ulen.p", "rb" )
+    #except:
       # do nothing
-      two=2
+     # pass
     templatefile_descriptions = open(args.templatefile+".desc.p", "rb" )
 #  else:
 #    templatefile = open(args.templatefile,"r")
@@ -128,7 +126,8 @@ oligolen=kmersize
 #
 # Read Template file
 #
-sys.stdout.write("%s\n" % ("# Reading database of templates"))
+sys.stdout.write("%s\n" % ("# Reading database of templates\
+ and ckecking for database integrity"))
 #
 # Harcode this to be true so I do not need to use the -p option
 #
@@ -141,6 +140,14 @@ if args.pickleinput == True:
     	sys.stderr.write('No ulen.p file found for database')
 	SystemExit() 
   templates_descriptions = pickle.load(templatefile_descriptions)
+
+#
+# Check for database integrity --> all template must have > 0 unique k-mers
+#
+if any(ulength == 0 for ulength in templates_ulengths.values()):
+  sys.stderr.write('ERROR: database did not pass integrity check!\n')
+  sys.exit(2)
+
 #
 #
 #
@@ -148,6 +155,7 @@ template_tot_len = 0
 template_tot_ulen = 0
 Ntemplates = 0
 #length added
+#print templates_ulengths
 for name in templates_lengths:
   template_tot_len  += templates_lengths[name]
   template_tot_ulen += templates_ulengths[name]
@@ -259,26 +267,41 @@ minscore = 0
 etta = 0.001
 sys.stdout.write("%s\n" % ("# Search statistics"))
 sys.stdout.write("%s\n" % ("# Total number of hits: %s") % (Nhits))
-sys.stdout.write("%s\n" % ("# Total number of kmers in templates : %s") % (template_tot_len))
+sys.stdout.write("%s\n" % ("# Total number of kmers in templates : %s")
+ % (template_tot_len))
 #sys.stdout.write("%s\n" % ("# Minimum number of k-mer hits to report template: %s") % (minscore))
-sys.stdout.write("%s\n" % ("# Maximum multiple testing corrected E-value to report match : %s") % (evalue))
+sys.stdout.write("%s\n" % ("# Maximum multiple testing corrected E-value\
+ to report match : %s") % (evalue))
 #sys.stdout.write("%s\n" % ("# Printing best matches"))
-outputfile.write("Template\tScore\tExpected\tz\tp\tfrac_q\tfrac_d\tcoverage\tunique_Kmers_in_template\tunique_Kmers_in_query\tDescription\n")
+outputfile.write("Template\tScore\tExpected\tz\tp\tfrac_q\tfrac_d\tcoverage\
+\tunique_Kmers_in_template\tunique_Kmers_in_query\tDescription\n")
+
+def calc_values(Nhits, template_ulength, template_tot_ulen, score,
+ etta, Ntemplates, uquerymers, templateentries, template_length):
+  """Calculate expected, z, p, p_corr, frac_q, frac_d, coverage"""
+  values = []
+  expected = float(Nhits)*float(template_ulength)/float(template_tot_ulen)
+  z = (score - expected)/sqrt(score + expected+etta)
+  # convert Z-score to twosided p-value
+  p = scipy.stats.norm.sf(z)*2
+  p_corr = p*Ntemplates
+  # frac_q = templateentries_tot[template]/(float(querymers)+etta)
+  frac_q = score/float(uquerymers)+etta
+  frac_d = score/(template_ulength+etta)
+  # print score, querymers, uquerymers,templates_ulengths[template], templateentries_tot[template]
+  coverage = 2*templateentries/float(template_length)
+  values.extend((expected, z, p, p_corr, frac_q, frac_d, coverage))
+  return values
+
 if args.pickleinput == True:
   sortedlist= sorted(templateentries.items(), key = itemgetter(1), reverse=True)
   if not args.wta == True:   
     for template,score in sortedlist:
       if score > minscore:
-        expected = float(Nhits)*float(templates_ulengths[template])/float(template_tot_ulen)
-        z = (score - expected)/sqrt(score + expected+etta)
-	# convert Z-score to twosided p-value
-	p = scipy.stats.norm.sf(z)*2
-	p_corr = p*Ntemplates
-#       frac_q = templateentries_tot[template]/(float(querymers)+etta)
-	frac_q = score/float(uquerymers)+etta
-	frac_d = score/(templates_ulengths[template]+etta)
-#	print score, querymers, uquerymers,templates_ulengths[template], templateentries_tot[template]
-	coverage = 2*templateentries_tot[template]/float(templates_lengths[template])
+        (expected, z, p, p_corr, frac_q, frac_d, coverage) = calc_values(Nhits,
+         templates_ulengths[template], template_tot_ulen, score, etta,
+         Ntemplates, uquerymers, templateentries_tot[template],
+         templates_lengths[template])
 	if p_corr <= evalue:
        		outputfile.write("%-12s\t%8s\t%8.3f\t%8.3f\t%4.1e\t%4.1e\t%4.1e\t%4.1e\t%8d\t%8d\t%s\n" % 
             		(template, score, expected, z, p_corr, frac_q, frac_d, coverage, templates_ulengths[template], uquerymers, templates_descriptions[template].strip()))
@@ -305,15 +328,10 @@ if args.pickleinput == True:
     for template,score in sortedlist2:
       #outputfile.write("%s %s\n" % (template,score))
       if score > minscore:
-        # or should Nhits be Nhits2
-        expected = float(Nhits)*float(templates_ulengths[template])/float(template_tot_ulen) 
-        z = (score - expected)/sqrt(score + expected+etta)
-	# convert Z-score to p-value
-	p = scipy.stats.norm.sf(z)*2
-	p_corr = p*Ntemplates
-        frac_q = score/float(uquerymers+etta)
-        frac_d = score/(templates_ulengths[template]+etta)
-	coverage = 2*templateentries_tot[template]/float(templates_lengths[template])
+        (expected, z, p, p_corr, frac_q, frac_d, coverage) = calc_values(Nhits, 
+         templates_ulengths[template], template_tot_ulen, score, etta, 
+         Ntemplates, uquerymers, templateentries_tot[template], 
+         templates_lengths[template])
 	if p_corr <= evalue:
           outputfile.write("%-12s\t%8s\t%8.3f\t%8.3f\t%4.1e\t%4.1e\t%4.1e\t%4.1e\t%8d\t%8d\t%s\n" % 
             (template, score, expected, z, p_corr, frac_q, frac_d, coverage, templates_ulengths[template], uquerymers, templates_descriptions[template].strip()))
