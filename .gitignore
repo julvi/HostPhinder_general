@@ -1,0 +1,11 @@
+# Old prophage scripts
+readAllHPprophage.pl
+readAllHPprophage140403.pl
+readAllHPprophageSUB140403.pl
+readAllHPprophageSUBten.pl
+
+# Old HostPhinder scripts
+wrap_hostPhinder.sh
+find_host.py
+findtemplate_scipy.py
+get_host_alpha.py
