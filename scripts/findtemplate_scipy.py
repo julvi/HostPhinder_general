@@ -66,20 +66,15 @@ parser.add_argument("-e", "--evalue", type=float, default=0.05,
  help="Maximum E-value")
 
 args = parser.parse_args()
-
 #
 # set up prefix filtering
 #
-
 prefix = args.prefix
 prefixlen = len(prefix)
-
 #
 #
 #
-
 evalue = args.evalue
-
 # 
 # Open files 
 # 
@@ -272,26 +267,41 @@ minscore = 0
 etta = 0.001
 sys.stdout.write("%s\n" % ("# Search statistics"))
 sys.stdout.write("%s\n" % ("# Total number of hits: %s") % (Nhits))
-sys.stdout.write("%s\n" % ("# Total number of kmers in templates : %s") % (template_tot_len))
+sys.stdout.write("%s\n" % ("# Total number of kmers in templates : %s")
+ % (template_tot_len))
 #sys.stdout.write("%s\n" % ("# Minimum number of k-mer hits to report template: %s") % (minscore))
-sys.stdout.write("%s\n" % ("# Maximum multiple testing corrected E-value to report match : %s") % (evalue))
+sys.stdout.write("%s\n" % ("# Maximum multiple testing corrected E-value\
+ to report match : %s") % (evalue))
 #sys.stdout.write("%s\n" % ("# Printing best matches"))
-outputfile.write("Template\tScore\tExpected\tz\tp\tfrac_q\tfrac_d\tcoverage\tunique_Kmers_in_template\tunique_Kmers_in_query\tDescription\n")
+outputfile.write("Template\tScore\tExpected\tz\tp\tfrac_q\tfrac_d\tcoverage\
+\tunique_Kmers_in_template\tunique_Kmers_in_query\tDescription\n")
+
+def calc_values(Nhits, template_ulength, template_tot_ulen, score,
+ etta, Ntemplates, uquerymers, templateentries, template_length):
+  """Calculate expected, z, p, p_corr, frac_q, frac_d, coverage"""
+  values = []
+  expected = float(Nhits)*float(template_ulength)/float(template_tot_ulen)
+  z = (score - expected)/sqrt(score + expected+etta)
+  # convert Z-score to twosided p-value
+  p = scipy.stats.norm.sf(z)*2
+  p_corr = p*Ntemplates
+  # frac_q = templateentries_tot[template]/(float(querymers)+etta)
+  frac_q = score/float(uquerymers)+etta
+  frac_d = score/(template_ulength+etta)
+  # print score, querymers, uquerymers,templates_ulengths[template], templateentries_tot[template]
+  coverage = 2*templateentries/float(template_length)
+  values.extend((expected, z, p, p_corr, frac_q, frac_d, coverage))
+  return values
+
 if args.pickleinput == True:
   sortedlist= sorted(templateentries.items(), key = itemgetter(1), reverse=True)
   if not args.wta == True:   
     for template,score in sortedlist:
       if score > minscore:
-        expected = float(Nhits)*float(templates_ulengths[template])/float(template_tot_ulen)
-        z = (score - expected)/sqrt(score + expected+etta)
-	# convert Z-score to twosided p-value
-	p = scipy.stats.norm.sf(z)*2
-	p_corr = p*Ntemplates
-#       frac_q = templateentries_tot[template]/(float(querymers)+etta)
-	frac_q = score/float(uquerymers)+etta
-	frac_d = score/(templates_ulengths[template]+etta)
-#	print score, querymers, uquerymers,templates_ulengths[template], templateentries_tot[template]
-	coverage = 2*templateentries_tot[template]/float(templates_lengths[template])
+        (expected, z, p, p_corr, frac_q, frac_d, coverage) = calc_values(Nhits,
+         templates_ulengths[template], template_tot_ulen, score, etta,
+         Ntemplates, uquerymers, templateentries_tot[template],
+         templates_lengths[template])
 	if p_corr <= evalue:
        		outputfile.write("%-12s\t%8s\t%8.3f\t%8.3f\t%4.1e\t%4.1e\t%4.1e\t%4.1e\t%8d\t%8d\t%s\n" % 
             		(template, score, expected, z, p_corr, frac_q, frac_d, coverage, templates_ulengths[template], uquerymers, templates_descriptions[template].strip()))
@@ -318,15 +328,10 @@ if args.pickleinput == True:
     for template,score in sortedlist2:
       #outputfile.write("%s %s\n" % (template,score))
       if score > minscore:
-        # or should Nhits be Nhits2
-        expected = float(Nhits)*float(templates_ulengths[template])/float(template_tot_ulen) 
-        z = (score - expected)/sqrt(score + expected+etta)
-	# convert Z-score to p-value
-	p = scipy.stats.norm.sf(z)*2
-	p_corr = p*Ntemplates
-        frac_q = score/float(uquerymers+etta)
-        frac_d = score/(templates_ulengths[template]+etta)
-	coverage = 2*templateentries_tot[template]/float(templates_lengths[template])
+        (expected, z, p, p_corr, frac_q, frac_d, coverage) = calc_values(Nhits, 
+         templates_ulengths[template], template_tot_ulen, score, etta, 
+         Ntemplates, uquerymers, templateentries_tot[template], 
+         templates_lengths[template])
 	if p_corr <= evalue:
           outputfile.write("%-12s\t%8s\t%8.3f\t%8.3f\t%4.1e\t%4.1e\t%4.1e\t%4.1e\t%8d\t%8d\t%s\n" % 
             (template, score, expected, z, p_corr, frac_q, frac_d, coverage, templates_ulengths[template], uquerymers, templates_descriptions[template].strip()))
