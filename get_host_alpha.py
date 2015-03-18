@@ -48,13 +48,14 @@ if not args.file:
 	sys.stderr.write('WARNING: Please specify the sorted results file with hosts!\n')
 	sys.exit(2)
 
-#print 'CLUSTERING:'
 #------------------------------------------------------------------------------
 # Cluster similar phages
 #------------------------------------------------------------------------------
-#links = open('/panfs1/cge/people/juliavi/PHAGES/data/skipped2275_0.7.txt', 'r')
+#links = open('skipped2196_0.7.txt', 'r')
+# on cge-s2:
 links = open('/panfs1/cge/people/juliavi/PHAGES/data/skipped2196_0.7.txt',
  'r')
+
 # Use the kept genome as key and append the skipped ones in the corresponding
 # value list.
 clusters={}

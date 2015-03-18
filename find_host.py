@@ -17,15 +17,16 @@ if not args.file:
 	sys.stderr.write("Please specify file. For more information use -h\n")
 	sys.exit(1)
 
-#meta='/panfs1/cge/people/juliavi/PHAGES/data/ALLmeta_141004.tab'
-#meta='/panfs1/cge/people/juliavi/PHAGES/data/meta_2274_141124.tab'
-
 
 meta = ''
 if args.taxonomy == 'species':
-	meta='/panfs1/cge/people/juliavi/PHAGES/data/meta_1871_species.tab'
+  #meta='meta_1871_species.tab'
+  # on cge-s2	
+  meta='/panfs1/cge/people/juliavi/PHAGES/data/meta_1871_species.tab'
 elif args.taxonomy == 'genus':
-	meta='/panfs1/cge/people/juliavi/PHAGES/data/meta_2196_141211.tab'
+  #meta='meta_2196_141211.tab'
+  # on cge-s2
+  meta='/panfs1/cge/people/juliavi/PHAGES/data/meta_2196_141211.tab'
 lol = list(csv.reader(open(meta, 'rt'), delimiter=' '))
 ann_hosts = {}
 
@@ -40,9 +41,6 @@ for l in range(len(lol)):
         	if len(host) > 1 and host[1][0].isupper():
                 	genus = genus + '_' + host[1]
         	ann_hosts[lol[l][0]] =  genus
-
-#	host = lol[l][7].split('; ')
-#        species[lol[l][0]] = host#lol[l][7]
 
 
 #loop over predictions and get host 
@@ -59,5 +57,4 @@ for l in preds.readlines():
 	line = l.rstrip('\n').split('\t')
 	host_p = re.sub( '\s', '', line[0])
 	host = ann_hosts[host_p]
-	#host = re.sub(' ', '_', host)
 	out.write('%s\t%s\n'% ('\t'.join(line[0:10]), host))
