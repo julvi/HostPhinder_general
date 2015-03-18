@@ -43,13 +43,20 @@ def reversecomplement(seq):
 # Parse command line options
 #
 parser = OptionParser()
-parser.add_option("-i", "--inputfile", dest="inputfilename", help="read from INFILE", metavar="INFILE") 
-parser.add_option("-f", "--filterfile", dest="filterfilename", help="filter (ignore) K-mers present in FILTERFILE", metavar="FILTERFILE") 
-parser.add_option("-o", "--outputfile", dest="outputfilename", help="write to OUTFILE", metavar="OUTFILE") 
-parser.add_option("-k", "--kmersize", dest="kmersize", help="Size of KMER", metavar="KMERSIZE") 
-parser.add_option("-t", "--homthres", dest="homthres", help="Threshold for homology reduction", metavar="HOMTHRES") 
-parser.add_option("-s", "--stepsize", dest="stepsize", help="Size of step between K-mers", metavar="STEPSIZE") 
-parser.add_option("-x", "--prefix", dest="prefix", help="type of prefix", metavar="PREFIX") 
+parser.add_option("-i", "--inputfile", dest="inputfilename",
+ help="read from INFILE", metavar="INFILE") 
+parser.add_option("-f", "--filterfile", dest="filterfilename",
+ help="filter (ignore) K-mers present in FILTERFILE", metavar="FILTERFILE") 
+parser.add_option("-o", "--outputfile", dest="outputfilename",
+ help="write to OUTFILE", metavar="OUTFILE") 
+parser.add_option("-k", "--kmersize", dest="kmersize",
+ help="Size of KMER", metavar="KMERSIZE") 
+parser.add_option("-t", "--homthres", dest="homthres",
+ help="Threshold for homology reduction", metavar="HOMTHRES") 
+parser.add_option("-s", "--stepsize", dest="stepsize",
+ help="Size of step between K-mers", metavar="STEPSIZE") 
+parser.add_option("-x", "--prefix", dest="prefix",
+ help="type of prefix", metavar="PREFIX") 
 #parser.add_option("-p", "--pickleoutput", dest="pickleoutput",action="store_true", help="use pickle output") 
 (options, args) = parser.parse_args() 
 # 
@@ -85,7 +92,7 @@ else:
 if options.kmersize != None:
   kmersize = int(options.kmersize)
 else:
-  kmersize = 16
+  kmersize = 15  # 15 for HostPhinder, it may be 16 for bacteria
 oligolen=kmersize
 #
 # Size of step when looking for K-mers in the sequence
@@ -158,7 +165,9 @@ if options.filterfilename != None:
               kmer_count += 1
               if kmer_count % printfreq == 0:
                 t1 = time.time()
-                sys.stdout.write("\r%s kmers (%s kmers / s)" % ("{:,}".format(kmer_count), "{:,}".format(kmer_count / (t1-t0))))
+                sys.stdout.write("\r%s kmers (%s kmers / s)"
+                 % ("{:,}".format(kmer_count),
+                 "{:,}".format(kmer_count / (t1-t0))))
                 sys.stdout.flush()
               start +=stepsize	
         del filterseqsegments
@@ -181,14 +190,17 @@ if options.filterfilename != None:
       kmer_count += 1
       if kmer_count % printfreq == 0:
         t1 = time.time()
-        sys.stdout.write("\r%s kmers (%s kmers / s)" % ("{:,}".format(kmer_count), "{:,}".format(kmer_count / (t1-t0))))
+        sys.stdout.write("\r%s kmers (%s kmers / s)"
+         % ("{:,}".format(kmer_count),
+         "{:,}".format(kmer_count / (t1-t0))))
         sys.stdout.flush()
       start +=stepsize	
   #
   # Print final statistics for filterfile
   #
   t1 = time.time()
-  sys.stdout.write("\r%s kmers (%s kmers / s)" % ("{:,}".format(kmer_count), "{:,}".format(kmer_count / (t1-t0))))
+  sys.stdout.write("\r%s kmers (%s kmers / s)"
+   % ("{:,}".format(kmer_count), "{:,}".format(kmer_count / (t1-t0))))
   sys.stdout.flush()
   sys.stdout.write("\n")
 del filterseqsegments
@@ -275,19 +287,23 @@ if options.inputfilename != None:
 	    frac_q = 0.0
 	    hitname = ""
 	    score = 0
-            sortedlist= sorted(templateentries.items(), key = itemgetter(1), reverse=True)
+            sortedlist= sorted(templateentries.items(), key = itemgetter(1),
+             reverse=True)
             for template,score in sortedlist:
               #frac_q = score/(float(querymers)+etta)
 	      frac_q = score/(float(uquerymers)+etta)
 	      hitname= template
 	      break 
-            sys.stdout.write("# Max frac_q similarity of %s to %s frac_q: %s Score: %s\n" % (inputname, hitname ,frac_q, score))
+            sys.stdout.write("# Max frac_q similarity of %s to %s frac_q: %s\
+             Score: %s\n" % (inputname, hitname ,frac_q, score))
             del templateentries
             del templateentries_tot
             del queryindex 
 	  if (options.homthres != None and frac_q >= homthres):
-            sys.stdout.write("# Skipping entry: %s in databade due to similarity to %s frac_q: %s\n" % (inputname, hitname ,frac_q))	  
-	  if (options.homthres == None or (options.homthres != None and frac_q < homthres)):
+            sys.stdout.write("# Skipping entry: %s in databade due to\
+             similarity to %s frac_q: %s\n" % (inputname, hitname ,frac_q))
+	  if (options.homthres == None or (options.homthres != None
+           and frac_q < homthres)):
 	    sys.stdout.write("%s %s\n" % ("# Including entry: ", inputname))
             #
 	    # Start of database update
@@ -297,7 +313,8 @@ if options.inputfilename != None:
               while start < len(seq)-kmersize:
                 submer = seq[start:start+kmersize]
 	        if prefix == seq[start:start+prefixlen]:
-	          if (options.filterfilename != None and submer not in filters) or options.filterfilename == None:
+	          if ((options.filterfilename != None and submer not in filters)\
+                   or options.filterfilename == None):
 		    Nstored += 1
                     if submer in inputs:
 		      if (inputs[submer].find(inputname) == -1):
@@ -310,7 +327,9 @@ if options.inputfilename != None:
 		if options.homthres == None:
                   if kmer_count % printfreq == 0:
                     t1 = time.time()
-                    sys.stdout.write("\r%s kmers (%s kmers / s)" % ("{:,}".format(kmer_count), "{:,}".format(kmer_count / (t1-t0))))
+                    sys.stdout.write("\r%s kmers (%s kmers / s)"
+                     % ("{:,}".format(kmer_count),
+                     "{:,}".format(kmer_count / (t1-t0))))
                     sys.stdout.flush()
                 start +=stepsize	
             lengths[inputname] = Nstored - Nstored_old
@@ -396,19 +415,23 @@ if options.inputfilename != None:
     frac_q = 0.0
     score = 0
     template = "" 
-    sortedlist= sorted(templateentries.items(), key = itemgetter(1), reverse=True)
+    sortedlist= sorted(templateentries.items(), key = itemgetter(1),
+     reverse=True)
     for template,score in sortedlist:
       #frac_q = score/(float(querymers)+etta)
       frac_q = score/(float(uquerymers)+etta)
       hitname=template
       break
-    sys.stdout.write("# Max frac_q similarity of %s to %s frac_q: %s Score: %s\n" % (inputname, hitname ,frac_q, score))
+    sys.stdout.write("# Max frac_q similarity of %s to %s frac_q: %s\
+     Score: %s\n" % (inputname, hitname ,frac_q, score))
     del templateentries
     del templateentries_tot
     del queryindex 
   if (options.homthres != None and frac_q >= homthres):
-    sys.stdout.write("# Skipping entry: %s in databade due to similarity to %s frac_q: %s\n" % (inputname, hitname ,frac_q))	  
-  if (options.homthres == None or (options.homthres != None and frac_q < homthres)):
+    sys.stdout.write("# Skipping entry: %s in database due to similarity to %s\
+     frac_q: %s\n" % (inputname, hitname ,frac_q))	  
+  if (options.homthres == None or (options.homthres != None
+   and frac_q < homthres)):
     #
     # Start of database update
     #
@@ -418,7 +441,8 @@ if options.inputfilename != None:
       while start < len(seq)-kmersize:
         submer = seq[start:start+kmersize]
         if prefix == seq[start:start+prefixlen]:
-          if (options.filterfilename != None and submer not in filters) or options.filterfilename == None:
+          if ((options.filterfilename != None and submer not in filters)
+           or options.filterfilename == None):
 	    Nstored += 1
             if submer in inputs:
 	      if (inputs[submer].find(inputname) == -1):
@@ -431,7 +455,8 @@ if options.inputfilename != None:
 	if options.homthres == None:
           if kmer_count % printfreq == 0:
             t1 = time.time()
-            sys.stdout.write("\r%s kmers (%s kmers / s)" % ("{:,}".format(kmer_count), "{:,}".format(kmer_count / (t1-t0))))
+            sys.stdout.write("\r%s kmers (%s kmers / s)"
+             % ("{:,}".format(kmer_count), "{:,}".format(kmer_count / (t1-t0))))
             sys.stdout.flush()
         start +=stepsize	
     lengths[inputname] = Nstored - Nstored_old
@@ -448,13 +473,15 @@ del inputseqsegments
 if options.pickleoutput == True:
   pickle.dump(inputs, outputfile,2)
   pickle.dump(lengths, outputfile_lengths,2)
+  # ulengths is a dictionary template_id => number of unique kmers
   pickle.dump(ulengths, outputfile_ulengths,2)
   pickle.dump(descriptions, outputfile_descriptions,2)
 #
 # Print final statistics for inputfile
 #
 t2 = time.time()
-sys.stdout.write("\r%s kmers (%s kmers / s)" % ("{:,}".format(kmer_count), "{:,}".format(kmer_count / (t2-t1))))
+sys.stdout.write("\r%s kmers (%s kmers / s)"
+ % ("{:,}".format(kmer_count), "{:,}".format(kmer_count / (t2-t1))))
 sys.stdout.flush()
 sys.stdout.write("\n")
 sys.stdout.write("# Total time used: %s s\n" % (t2-t0))

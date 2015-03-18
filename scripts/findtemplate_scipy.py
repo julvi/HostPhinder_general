@@ -53,16 +53,17 @@ parser.add_argument("-x", "--prefix", type=str, default='', help="prefix")
 #parser.add_option("-a", "--printall", dest="printall",action="store_true", 
 #help="Print matches to all templates in templatefile unsorted") 
 
-parser.add_argument("-p", "--pickleinput", action="store_true", help="use pickle\
- input, on by default, option  kept for backwords compatibility") 
+parser.add_argument("-p", "--pickleinput", action="store_true",
+ help="use pickle input on by default, option kept for backwords compatibility") 
 
 # The first hit is the one to which most of query kmers mathch to
 # with this option (not currently working) the matching k-mers are then eliminated
 # from the search
-parser.add_argument("-w", "--winnertakesitall", dest="wta", 
-action="store_true", help="kmer hits are only assigned to most similar template")
+parser.add_argument("-w", "--winnertakesitall", dest="wta", action="store_true",
+ help="kmer hits are only assigned to most similar template")
 
-parser.add_argument("-e", "--evalue", type=float, default=0.05, help="Maximum E-value")
+parser.add_argument("-e", "--evalue", type=float, default=0.05,
+ help="Maximum E-value")
 
 args = parser.parse_args()
 
@@ -94,11 +95,11 @@ if args.templatefile != None:
   if args.pickleinput == True:
     templatefile = open(args.templatefile+".p", "rb" )
     templatefile_lengths = open(args.templatefile+".len.p", "rb" )
-    try:
-      templatefile_ulengths = open(args.templatefile+".ulen.p", "rb" )
-    except:
+    #try:
+    templatefile_ulengths = open(args.templatefile+".ulen.p", "rb" )
+    #except:
       # do nothing
-      two=2
+     # pass
     templatefile_descriptions = open(args.templatefile+".desc.p", "rb" )
 #  else:
 #    templatefile = open(args.templatefile,"r")
@@ -130,7 +131,8 @@ oligolen=kmersize
 #
 # Read Template file
 #
-sys.stdout.write("%s\n" % ("# Reading database of templates"))
+sys.stdout.write("%s\n" % ("# Reading database of templates\
+ and ckecking for database integrity"))
 #
 # Harcode this to be true so I do not need to use the -p option
 #
@@ -143,6 +145,14 @@ if args.pickleinput == True:
     	sys.stderr.write('No ulen.p file found for database')
 	SystemExit() 
   templates_descriptions = pickle.load(templatefile_descriptions)
+
+#
+# Check for database integrity --> all template must have > 0 unique k-mers
+#
+if any(ulength == 0 for ulength in templates_ulengths.values()):
+  sys.stderr.write('ERROR: database did not pass integrity check!\n')
+  sys.exit(2)
+
 #
 #
 #
