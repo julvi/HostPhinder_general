@@ -11,9 +11,15 @@ findtemplate_scipy.py
 get_host_alpha.py
 
 # Database & Results folders
+archive
 database
+prophages
 results
 scripts_untracked
+CAGsLists
 
 # Queue system files
 error*
+
+# Others
+2196accn_genus.list.fsa
