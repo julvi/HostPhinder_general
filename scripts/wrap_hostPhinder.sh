@@ -44,7 +44,7 @@ col_dec=`hash_get "columns" "$decision"`
 valdir="$output/summ"
 mkdir -p $valdir
 # cge-s2:
-#work_dir='/panfs1/cge/people/juliavi/HostPhinder'
+#work_dir='/panfs1/cge/people/juliavi/PHAGES/HostPhinder'
 
 #------------------------ Find templates in database with match ---------------
 #output_1="$output/${input##*/}""_pred"
@@ -52,15 +52,16 @@ mkdir -p $valdir
 # (last branch and leaf)
 output_1="$output/$(echo $input | perl -ne '/\/.*\/(.*)\/(.*)$/; print "$1_$2"')_${taxonomy}_pred"
 
-python2.7 scripts/findtemplate_scipy.py -t $database -p -k 15 -o $output_1 -i $input -e $evalue
+#python2.7 scripts/findtemplate_scipy.py -t $database -p -k 15 -o $output_1 -i $input -e $evalue
+#scripts/findtemplate_scipy.py -t $database -p -k 15 -o $output_1 -i $input -e $evalue
 # cge-s2:
-#/tools/opt/anaconda/bin/python $work_dir/scripts/findtemplate_scipy.py -t $database -p -k 15 -o $output_1 -i $input -e $evalue
+/tools/opt/anaconda/bin/python scripts/findtemplate_scipy.py -t $database -p -k 15 -o $output_1 -i $input -e $evalue
 
 
 #----------------- Add host column, remove Description column -----------------
-scripts/find_host.py -f $output_1 -t $taxonomy
+#scripts/find_host.py -f $output_1 -t $taxonomy
 # cge-s2
-#/tools/bin/python2.7 $work_dir/scripts/find_host.py -f $output_1 -t $taxonomy
+/tools/bin/python2.7 scripts/find_host.py -f $output_1 -t $taxonomy
 
 output_2=$output_1.new #new table with description column removed but host column added
 rm $output_1
@@ -76,9 +77,9 @@ rm $output_2
 if [ $taxonomy = species ]
 	then
 		#mkdir -p ${output}_sp_alpha
-		scripts/get_host_alpha.py -a 2.004 -f $sort_output >> $valdir/sp_alpha_values #${output}_sp_alpha/values
+#		scripts/get_host_alpha.py -a 2.004 -f $sort_output >> $valdir/sp_alpha_values #${output}_sp_alpha/values
 		# cge-s2
-#		/tools/bin/python2.7 $work_dir/scripts/get_host_alpha.py -a 2.004 -f $sort_output >> ${output}_sp_alpha/values
+		/tools/bin/python2.7 scripts/get_host_alpha.py -a 2.004 -f $sort_output >> $valdir/sp_alpha_values #${output}_sp_alpha/values
 fi
 
 #------------------------ GENUS --> First hit ----------------------------------

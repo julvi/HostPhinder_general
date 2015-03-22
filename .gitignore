@@ -9,3 +9,11 @@ wrap_hostPhinder.sh
 find_host.py
 findtemplate_scipy.py
 get_host_alpha.py
+
+# Database & Results folders
+database
+results
+scripts_untracked
+
+# Queue system files
+error*
