@@ -95,7 +95,7 @@ if [ $taxonomy = genus ]
 		   value=`grep -v Template $sort_output | sed -n '1p' | awk '{print $7}'`
 		   echo -e "$acc\t$pred\t$value" >> $valdir/gn_first_values #${output}_first/values
 		else
-		   echo -e "$acc\tNo_significant_match_found" >> $output/gn_first_values #${output}_first/values
+		   echo -e "$acc\tNo_significant_match_found" >> $valdir/gn_first_values #${output}_first/values
 
 		fi
 fi
