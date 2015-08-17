@@ -2,11 +2,10 @@
 
 # Author: Julia Villarroel
 
-
 evalue=0.05
-#decision=frac_d
 decision=coverage
 outdir="HostPhinder/results"
+kmersize=16
 
 while getopts e:i:o:d:b:t:k: opt
 do
@@ -31,35 +30,34 @@ declare -A meas2col=(
 )
 
 col_dec=${meas2col["$decision"]}
-
+workdir="/home/projects/pr_phage/people/juliav"
+outdir="$workdir/$outdir"
 #mkdir -p $outdir
-output_file="${outdir}_${kmersize}_${taxonomy}_alpha_${decision}_evalue$evalue"
+#output_file="${outdir}_${kmersize}_${taxonomy}_first_${decision}_evalue$evalue"
 
 
 if [ $taxonomy = species ]
 then
-    meta="meta_1871_species_150506.tab"    
+    meta="$workdir/meta_1871_species_150506.tab"    
+    database="$workdir/HostPhinder/database/accnwhost1871.list_step1_kmer16_thres1.0_db"
 elif [ $taxonomy = genus ]
 then
-    meta="meta_2196_genus_150506.tab"
+    meta="$workdir/meta_2196_genus_150506.tab"
+    database="$workdir/HostPhinder/database/accnwhost2196.list_step1_kmer16_thres1.0_db"
 fi
 #------------------------ Find templates in database with match ---------------
-# This perl oneliner takes the last two branches of a path
-# (last branch and leaf)
-#findtempl_out="${outdir%%/*}/$(echo $input |\
-#findtempl_out="$outdir/$(echo $input |\
-# perl -ne '/\/.*\/(.*)\/(.*)$/; print "$1_$2"')_${taxonomy}_pred_${kmersize}mers_evalue$evalue"
 findtempl_out="$outdir/${input##*/}_${taxonomy}_pred_${kmersize}mers_evalue$evalue"
 
-python HostPhinder/scripts/findtemplate_scipy.py -t $database -p -k $kmersize\
- -o $findtempl_out -i $input -e $evalue
+python $workdir/HostPhinder/scripts/findtemplate_scipy.py -t $database -p\
+ -k $kmersize -o $findtempl_out -i $input -e $evalue
 
 # If a prediction has been made --> more than one line (header +..)
 if [[ $(wc -l <$findtempl_out) -ge 2 ]]
 then
 #------------------------- Description --> Host column ------------------------
-    predWhost=${findtempl_out}_host #new table with description column removed
-					#and host column added
+    # Replace description column with host column on the significant hits table
+    predWhost=${findtempl_out}_host 
+    rm $predWhost
     IFS=$'\n'       # make newlines the only separator
     for line in $(cat $findtempl_out)
     do
@@ -78,22 +76,9 @@ then
     rm $predWhost
 
 #------------------------------ Alpha method (=6) ------------------------------
-    alpha_out=`HostPhinder/scripts/get_host_alpha.py -f $sort_output \
--d coverage -a 6.0 -c FALSE | sed -n '1p'`
-    echo $alpha_out >> $output_file
-
-#rm $findtempl_out
-<<'END'
-#--------------------------------- First hit -----------------------------------
-# Take the first hit
-# Check if there is a predictions, i.e. there's more than one line
-    pred=`cat $sort_output | sed -n '1p' | cut -f 11`
-    value=`cat $sort_output | sed -n '1p' | cut -f $col_dec`
-#    echo -e "$acc\t$pred\t$value" >>  $output_file
-    echo -e "$input\t$pred\t$value" >>  $output_file
+    alpha_out=`$workdir/HostPhinder/scripts/get_host_alpha.py -f $sort_output -d coverage -a 6.0 -c FALSE`
+    echo $alpha_out
 else
-#    echo -e "$acc\tNo_significant_match_found" >> $output_file
-    echo -e "$input\tNo_significant_match_found" >> $output_file
-END
-fi
+    echo -e "$input\tNo_significant_match_found"
 
+fi

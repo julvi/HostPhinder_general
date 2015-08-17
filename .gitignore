@@ -1,3 +1,6 @@
+# Docker folders and files
+HP_docker*
+
 # Old prophage scripts
 readAllHPprophage.pl
 readAllHPprophage140403.pl
@@ -23,3 +26,4 @@ error*
 
 # Others
 2196accn_genus.list.fsa
+mongoDB
