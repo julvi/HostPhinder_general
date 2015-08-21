@@ -11,7 +11,9 @@ myReadTable<-function(file){
 }
 # read all files into list of tables
 lot <- lapply(c('eval_cov_bins_acc_all_sp.tab','eval_cov_bins_acc_all_gn.tab',
-         'cov_bins_right_all_sp.tab', 'cov_bins_right_all_gn.tab'),myReadTable)
+         'cov_bins_right_all_sp.tab', 'cov_bins_right_all_gn.tab',
+         'MVP_cov_bins_acc_count_sp.tab', 'MVP_cov_bins_acc_count_gn.tab'),
+         myReadTable)
 
 
 
@@ -27,6 +29,8 @@ mybarplot <-function(mytable, title, bnames){
                     ylim=c(0,1), panel.first=grid(), 
                     names.arg = bnames,
                     # tango palette colours
+                    #cex.lab = 1.2, # axes names size
+                    #cex.main = 1.5, # title font size
                     col= c("#babdb6", "#8ae234", "#8ae234", "#8ae234",
                            "#8ae234", "#8ae234", "#8ae234", "#8ae234",
                            "#4e9a06", "#4e9a06"))
@@ -44,20 +48,29 @@ mybarplot <-function(mytable, title, bnames){
 
 #Define Margins. Give as much space possible on the left margin (second value)
 
-
+# Evaluation set
 pdf("eval_acc_bins_all.pdf", width=10, height=5)
 par(mar=c(5, 5, 4, 5) + 0.1)
 par(mfrow=c(1,2))
 plot1 <- mybarplot(lot[[1]], expression('phages'[eval_species]), bnames)
 plot2 <- mybarplot(lot[[2]], expression('phages'[eval_genus]), bnames)
 dev.off()
+# PhySpy predicted prophages
 pdf("proph_acc_bins_all.pdf", width=10, height = 5)
 par(mar=c(5, 5, 4, 5) + 0.1)
 par(mfrow=c(1,2))
 plot3 <- mybarplot(lot[[3]], expression('prophages'[species]), bnames)
 plot4 <- mybarplot(lot[[4]], expression('prophages'[genus]), bnames)
 dev.off()
-
+# PhySpy predicted prophages & Manually verified prophages
+pdf("proph_MVP_acc_bins_all.pdf", width=10, height = 10)
+par(mar=c(5, 5, 4, 5) + 0.1)
+par(mfrow=c(2,2))
+plot3 <- mybarplot(lot[[3]], expression('prophages'[species]), bnames)
+plot4 <- mybarplot(lot[[4]], expression('prophages'[genus]), bnames)
+plot3 <- mybarplot(lot[[5]], expression('Manually verified prophages'[species]), bnames)
+plot4 <- mybarplot(lot[[6]], expression('Manually verified prophages'[genus]), bnames)
+dev.off()
 
 
 
