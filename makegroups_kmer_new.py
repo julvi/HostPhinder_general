@@ -25,6 +25,7 @@ if not args.file:
 
 #------------------------------------------------------------------------------
 links = open(args.file, 'r')
+#print args.file
 # Use the kept genome as key and append the skipped ones in the corresponding
 # value list.
 clusters={}
@@ -53,13 +54,13 @@ for group in merged:
 	groupsizes.append(len(group))
 
 #print len(merged)
+
 #  15mers: 292 clusters for 2196 phages
 # 16mers:293 clusters
 
 # Use relative paths
-meta_gn = open('meta_2196_genus_150506.tab', 'r')
-meta_sp = open('meta_1871_species_150506.tab', 'r')
-
+meta_gn = open('../meta_2196_genus_150506.tab', 'r')
+meta_sp = open('../meta_1871_species_150506.tab', 'r')
 # Read metadata into accn => [host, size] dictionary giving priority to species
 # info
 hosts = {}
@@ -75,6 +76,11 @@ meta_sp.close()
 #for key, value in hosts.iteritems():
 #	print key + ' => ' + value
 
+#for innerlist in merged:
+ #   print hosts[innerlist[0]][0]
+#    for idx in innerlist:
+#        print idx
+
 #-----------------------------------------------------------------------------
 # Make groups
 #-----------------------------------------------------------------------------
@@ -89,9 +95,17 @@ allphages = open('accnwhost2196.list', 'r')
 single_seq = [phage.strip() for phage in allphages 
               if not phage.strip() in flattenmerged]
 
+for el in single_seq:
+    merged.append([el])
+
+#print('\n'.join(map(str,merged)))
+for innerlist in merged:
+    print hosts[innerlist[0]][0]
+
+"""
 for idx in range(len(single_seq)):
     groupsizes.append(1)
-print sorted(groupsizes)
+
 ######## Supplementary material seq <- group member ###########################
 #for seq in single_seq:
  #   print "%s\t%s" % (seq, seq)
@@ -114,7 +128,7 @@ for item in single_seq:
 
 #print len(unique_seq)
 # 1414 seeds for 16mers
-"""
+
 #for key, value in unique_seq.iteritems():
 #	print key + '=>' + ' '.join(value)
 
@@ -149,7 +163,7 @@ while len(sorted_host_size) > 0:
 # Check that host are equally represented in each group
 
 def list_grouphosts(group):
-	"""""" Return a set of host in the given group""""""
+"""	""" Return a set of host in the given group""""""
 	unique_host = set()
 	for each in group:
 		unique_host.add(each[1])
