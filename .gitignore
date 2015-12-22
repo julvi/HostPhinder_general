@@ -21,6 +21,13 @@ results
 scripts_untracked
 CAGsLists
 
+# Heatmap outputfiles
+heatmap/*names
+heatmap/*list
+heatmap/*gen*
+heatmap/*tab
+heatmap/*repr*
+
 # Queue system files
 error*
 

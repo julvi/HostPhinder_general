@@ -100,7 +100,7 @@ for el in single_seq:
 
 #print('\n'.join(map(str,merged)))
 for innerlist in merged:
-    print hosts[innerlist[0]][0]
+    print "%s	%d" % (hosts[innerlist[0]][0], len(innerlist))
 
 """
 for idx in range(len(single_seq)):
