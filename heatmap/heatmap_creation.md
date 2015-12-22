@@ -15,8 +15,8 @@ awk -F '\t' '{if($2!=$3)print $0}' id_ann_pred_alpha_gn_gr1.tab | awk -F '\t'  '
 awk -F '\t' '{if($2!=$3)print $0}' id_ann_pred_alpha_sp_gr1.tab | awk -F '\t' '{ for (i=2; i<=3; i++) print $i }' | sort | uniq > heatmap_hosts_species #→ 81
 
 # FOR COMPLETE HEATMAP
-awk -F '\t'  '{ for (i=2; i<=3; i++) print $i }' id_ann_pred_alpha_gn_gr1.tab | sort | uniq > heatmap_complete_hosts_genus #-> 73
-awk -F '\t' '{ for (i=2; i<=3; i++) print $i }' id_ann_pred_alpha_sp_gr1.tab | sort | uniq > heatmap_complete_hosts_species # ->105
+awk -F '\t'  '{ for (i=2; i<=3; i++) print $i }' ../../evaluation/id_ann_pred_alpha_gn_gr1.tab | sort | uniq > heatmap_complete_hosts_genus #-> 73
+awk -F '\t' '{ for (i=2; i<=3; i++) print $i }' ../../evaluation/id_ann_pred_alpha_sp_gr1.tab | sort | uniq > heatmap_complete_hosts_species # ->105
 
 #Check which host have not been predicted
 awk -F '\t' '{print $1}' id_ann_pred_alpha_gn_gr1.tab > accn_pred_gn_eval.list
@@ -25,7 +25,7 @@ awk -F '\t' '{print $1}' id_ann_pred_alpha_sp_gr1.tab > accn_pred_sp_eval.list
 comm -23 group1_species.list accn_pred_sp_eval.list | grep -f - meta_1871_species_150506.tab | awk -F '\t' '{print $NF}' | sort | uniq | comm -13 heatmap_hosts_species - | cat - heatmap_hosts_species > tmp; mv tmp heatmap_hosts_species → 87
 
 # For complete heatmap
-comm -23 ../groups/group1_species.list accn_pred_sp_eval.list | grep -f - ../meta_1871_species_150506.tab | awk -F '\t' '{print $NF}' | sort | uniq | comm -13 heatmap_complete_hosts_species - | cat - heatmap_complete_hosts_species > tmp; mv tmp heatmap_complete_hosts_species # -> 109
+comm -23 ../../groups/group1_species.list accn_pred_sp_eval.list | grep -f - ../meta_1871_species_150506.tab | awk -F '\t' '{print $NF}' | sort | uniq | comm -13 heatmap_complete_hosts_species - | cat - heatmap_complete_hosts_species > tmp; mv tmp heatmap_complete_hosts_species # -> 109
 
 
 #comm -23 outputs the entries unique to group1_species.list (i.e. the non predicted ones)
@@ -43,7 +43,28 @@ comm -23 ../groups/group1_genus.list accn_pred_gn_eval.list | grep -f - ../meta_
 ./ann_vs_pred_matrix.py -l heatmap_hosts_species -t species > ann_vs_pred_87sp_150630.tab
 
 # For complete heatmap
-./ann_vs_pred_matrix.py -l heatmap_complete_hosts_genus -t genus > ann_vs_pred_compl_76gn_151222.tab
-./ann_vs_pred_matrix.py -l heatmap_complete_hosts_species -t species > ann_vs_pred_compl_109sp_151222.tab
+./ann_vs_pred_complete_matrix.py -l heatmap_complete_hosts_genus -t genus > ann_vs_pred_compl_76gn_151222.tsv
+./ann_vs_pred_complete_matrix.py -l heatmap_complete_hosts_species -t species > ann_vs_pred_compl_109sp_151222.tsv
+
+# Create axes names
+	# species row names
+awk -F '\t' '{print $2}' species_repr_eval | grep -vwf - heatmap_complete_hosts_species | awk '{print $0 " (0)"}' > ann_sp_row_names_complete
+awk -F '\t' '{print $2" ("$1")"}' species_repr_eval >> ann_sp_row_names_complete 
+sort -o ann_sp_row_names_complete ann_sp_row_names_complete
+	# genus row names
+awk -F '\t' '{print $2}' genus_repr_eval | grep -vwf - heatmap_complete_hosts_genus | awk '{print $0 " (0)"}' > ann_gn_row_names_complete
+awk -F '\t' '{print $2" ("$1")"}' genus_repr_eval >> ann_gn_row_names_complete 
+sort -o ann_gn_row_names_complete ann_gn_row_names_complete
+	# species col names
+grep -wf heatmap_complete_hosts_species species_repr_train_test | awk -F '\t' '{print $2" ("$1")"}' > ann_sp_col_names_complete
+awk '{$NF=""}1' ann_sp_col_names_complete | sed 's/ *$//' | grep -vwf - heatmap_complete_hosts_species | awk '{print $0 " (0)"}' >> ann_sp_col_names_complete 
+sort -o ann_sp_col_names_complete ann_sp_col_names_complete
+	# genus col names
+grep -wf heatmap_complete_hosts_genus genus_repr_train_test | awk -F '\t' '{print $2" ("$1")"}' > ann_gn_col_names_complete
+awk '{$NF=""}1' ann_gn_col_names_complete | sed 's/ *$//' | grep -vwf - heatmap_complete_hosts_genus | awk '{print $0 " (0)"}' >> ann_gn_col_names_complete 
+sort -o ann_gn_col_names_complete ann_gn_col_names_complete
+
+# awk '{$NF=""}1' -> print all but last field
+# sed 's/ *$//' -> remove trailing space
 
 
