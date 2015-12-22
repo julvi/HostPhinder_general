@@ -24,6 +24,7 @@ CAGsLists
 # Heatmap outputfiles
 heatmap/*names
 heatmap/*list
+heatmap/*species
 heatmap/*gen*
 heatmap/*tab
 heatmap/*repr*
