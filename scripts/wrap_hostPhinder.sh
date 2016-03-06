@@ -4,7 +4,6 @@
 
 
 evalue=0.05
-#decision=frac_d
 decision=coverage
 outdir="HostPhinder/results"
 
@@ -32,7 +31,7 @@ declare -A meas2col=(
 
 col_dec=${meas2col["$decision"]}
 
-#mkdir -p $outdir
+mkdir -p $outdir
 output_file="${outdir}_${kmersize}_${taxonomy}_alpha_${decision}_evalue$evalue"
 
 
@@ -44,11 +43,6 @@ then
     meta="meta_2196_genus_150506.tab"
 fi
 #------------------------ Find templates in database with match ---------------
-# This perl oneliner takes the last two branches of a path
-# (last branch and leaf)
-#findtempl_out="${outdir%%/*}/$(echo $input |\
-#findtempl_out="$outdir/$(echo $input |\
-# perl -ne '/\/.*\/(.*)\/(.*)$/; print "$1_$2"')_${taxonomy}_pred_${kmersize}mers_evalue$evalue"
 findtempl_out="$outdir/${input##*/}_${taxonomy}_pred_${kmersize}mers_evalue$evalue"
 
 python HostPhinder/scripts/findtemplate_scipy.py -t $database -p -k $kmersize\
@@ -83,17 +77,3 @@ then
     echo $alpha_out >> $output_file
 
 #rm $findtempl_out
-<<'END'
-#--------------------------------- First hit -----------------------------------
-# Take the first hit
-# Check if there is a predictions, i.e. there's more than one line
-    pred=`cat $sort_output | sed -n '1p' | cut -f 11`
-    value=`cat $sort_output | sed -n '1p' | cut -f $col_dec`
-#    echo -e "$acc\t$pred\t$value" >>  $output_file
-    echo -e "$input\t$pred\t$value" >>  $output_file
-else
-#    echo -e "$acc\tNo_significant_match_found" >> $output_file
-    echo -e "$input\tNo_significant_match_found" >> $output_file
-END
-fi
-
