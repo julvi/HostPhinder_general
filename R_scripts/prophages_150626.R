@@ -15,15 +15,18 @@ lot <- lapply(c('eval_cov_bins_acc_all_sp.tab','eval_cov_bins_acc_all_gn.tab',
          'MVP_cov_bins_acc_count_sp.tab', 'MVP_cov_bins_acc_count_gn.tab'),
          myReadTable)
 
+Kproph <- lapply(c('Kproph_cov_bins_acc_count_sp.tsv',
+                   'Kproph_cov_bins_acc_count_gn.tsv'), myReadTable)
+
 
 
 bnames <- c("0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8",
             "0.9")
 
-mybarplot <-function(mytable, title, bnames){
+mybarplot <-function(mytable, bnames){ # title, bnames){
   par(las=2) # --> make barplot write all labels
   myhist <- barplot(height=mytable$accuracy, axisnames=TRUE,
-                    main = title,
+                   # main = title,
                     ylab = 'Accuracy', 
                     xlab = 'Coverage ranges',
                     ylim=c(0,1), panel.first=grid(), 
@@ -46,14 +49,29 @@ mybarplot <-function(mytable, title, bnames){
   return(myhist)
 }
 
+
+setwd("~/Desktop")
+pdf("Kproph_acc_bins_all.pdf", width=10, height = 5)
+par(mar=c(5, 5, 4, 5) + 0.1)
+par(mfrow=c(1,2))
+plot1 <- mybarplot(Kproph[[1]], expression('Conserved prophages'[species]), bnames)
+plot2 <- mybarplot(Kproph[[2]], expression('Conserved prophages'[genus]), bnames)
+dev.off()
 #Define Margins. Give as much space possible on the left margin (second value)
 
 # Evaluation set
 pdf("eval_acc_bins_all.pdf", width=10, height=5)
-par(mar=c(5, 5, 4, 5) + 0.1)
-par(mfrow=c(1,2))
-plot1 <- mybarplot(lot[[1]], expression('phages'[eval_species]), bnames)
-plot2 <- mybarplot(lot[[2]], expression('phages'[eval_genus]), bnames)
+par(mar=c(5, 5, 5, 10) + 0.1)
+
+# EVALUATION SET
+par(mfrow=c(1,1))
+pdf("hist_eval_sp.pdf", width=7, height = 10)
+
+plot1 <- mybarplot(lot[[1]], bnames) #expression('phages'[eval_species]), bnames)
+dev.off()
+
+pdf("hist_eval_gn.pdf", width=10, height = 10)
+plot2 <- mybarplot(lot[[2]], bnames) #expression('phages'[eval_genus]), bnames)
 dev.off()
 # PhySpy predicted prophages
 pdf("proph_acc_bins_all.pdf", width=10, height = 5)
