@@ -21,7 +21,7 @@ done
 
 rm -f *.tmp
 
-for s in $(echo AA | gawk '{ for ( s = 1; s<=100; s++ ) { print s }}')
+for s in $(echo AA | gawk '{ for ( s = 1; s<=1000; s++ ) { print s }}')
 do
     cat $input | mkbset_long_x86_64 -seed $s -- | xC > $$.data
 
@@ -40,7 +40,9 @@ perl -p -e 's/^ //' > ${input}_bt_acc
 #sed -i '1i10 20 30 40 50 60 70 80 90' ${input}_bt_acc 
 
 colnum2=`awk '{print NF}' ${input}_bt_acc | sort -nu | tail -n 1`
-echo 'Genome_len_percent Accuracy_mean standard_deviation squared_error_mean' > ${input}_mean_ssd_sem
+
+# Keep mean ssd sem colnames as they'll be used for graph on R
+echo 'Genome_len_percent mean ssd sem' > ${input}_mean_ssd_sem
 
 for c in `seq 1 1 $colnum2`
 do

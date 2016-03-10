@@ -13,7 +13,7 @@ do
 done
 
 # Calculate accuracy rigth predictions / predictions
-echo `cat $input | gawk -F "\t" '{if ( $2 == $3 ) { tp++} nn++}END{print tp/nn}' ` 
+#echo `cat $input | gawk -F "\t" '{if ( $2 == $3 ) { tp++} nn++}END{print tp/nn}' ` 
 
 rm -f ${input}_bt.out
 
