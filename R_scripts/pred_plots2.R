@@ -9,13 +9,6 @@ require(gridExtra)
 
 setwd("/Users/juliavi/GoogleDrive/PhD/HostPhinder_general/plots_and_Rscripts/pred_curves")
 
-myReadTable<-function(file){
-  # read table from file return it with column names
-  x <- read.table(file, as.is=T, header=T) #[-1,] -> x
-  
-  return(x)
-}
-
 #-------------------- Criterion 3 CLUSTERING ---------------------------------#
 myReadTable<-function(file){
   # read table from file return it with column names
@@ -244,20 +237,38 @@ png("cov_f_alpha_no_clust.png",
     res = 300,            # 300 pixels per inch
     pointsize = 20)
 
-myplot<-function(mytable, mytitle, myylim, mybreaks, myxlab){
-  # take the first column name (f or alpha)
-  myx <- names(mytable)[1]
-  x <- ggplot(mytable, aes_string(x= myx, y = "mean")) +
-    geom_point(size = 2, color='black') +
-    geom_errorbar(aes(ymax = mean+sem, ymin = mean-sem), color='black') +
-    ggtitle(mytitle) +    
-    coord_cartesian(ylim=myylim) +
-    scale_x_continuous(breaks=mybreaks)  +
-    xlab(myxlab) +
-    ylab("accuracy")
-  return(x)
-}
 
+###############################################################################
+# HostPhinder accuracy on percentages of genome length
+###############################################################################
+setwd("/Users/juliavi/GoogleDrive/PhD/HostPhinder_general/HP_on_percentages")
+source("/Users/juliavi/HostPhinder/R_scripts/plot_table_funn_mean_ssd_sem.R")
+
+lot <- lapply(c('id_ann_pred102030405060708090_species.tsv_mean_ssd_sem',
+                'id_ann_pred102030405060708090_genus.tsv_mean_ssd_sem'),
+              myReadTable)
+
+lot2 <- lapply(c('accuracy_all_predictions_species', 
+                 'accuracy_all_predictions_genus'), 
+               myReadTable)
+myplot(lot[[1]], 
+       expression('Accuracy vs Genome Length Percent, Phages'[eval_species]),
+       c(0.82,0.84), 1:9*10, "Genome Length (% of total length)")
+
+myplot(lot[[2]], 
+       expression('Accuracy vs Genome Length Percent, Phages'[eval_genus]),
+       c(0.88,0.895), 1:9*10, "Genome Length (% of total length)")
+
+
+myplot(lot2[[1]], 
+       expression('Accuracy vs Genome Length Percent, Phages'[eval_species]),
+       c(0.73,0.83), 1:9*10, "Genome Length (% of total length)")
+
+myplot(lot2[[2]], 
+       expression('Accuracy vs Genome Length Percent, Phages'[eval_genus]),
+       c(0.81,0.89), 1:9*10, "Genome Length (% of total length)")
+###############################################################################
+###############################################################################
 
 plot1 <- myplot(lot[[1]], expression(paste('f x coverage'[1], " species")),
                 c(0.754,0.778), 0:10*0.1, "f")
