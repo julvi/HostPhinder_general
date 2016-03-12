@@ -31,7 +31,7 @@ for f in $(cat groups/group1_$taxonomy.list)
 do
     [ -f $fasta_out/$percent.$f.fsa ] \
       && echo "$fasta_out/$percent.$f.fsa exist" \
-      || HostPhinder_general/scripts_gen/takeFastaPercent.sh -p $percent \
+      || scripts_gen/takeFastaPercent.sh -p $percent \
       -f $INPUT/$f/$f.fsa > $fasta_out/$percent.$f.fsa
 
     HostPhinder/scripts/wrap_hostPhinder_new.sh -e $evalue \
