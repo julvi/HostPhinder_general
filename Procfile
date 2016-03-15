@@ -9,7 +9,7 @@ xmsub -W group_list=pr_phage -A pr_phage \
 -N HP_100_sp \
 -de -r y scripts_gen/run_wrap_HP_eval_varLength.sh \
 -t species -p 100 -o eval_percentages/100
-#864399
+#864399              C 0             tor  48.79      1.0  -    juliav   juliav  risoe-r03-cn030     2     8:41:19   Sat Mar 12 16:57:04
 
 # 10% to 90% species
 for i in `seq 10 10 90`; do xmsub -W group_list=pr_phage -A pr_phage \
@@ -53,4 +53,4 @@ xmsub -W group_list=pr_phage -A pr_phage \
 -N HP_100_gn \
 -de -r y scripts_gen/run_wrap_HP_eval_varLength.sh \
 -t genus -p 100 -o eval_percentages/100
-#864400
+#864400              C 0             tor  47.58      1.0  -    juliav   juliav  risoe-r03-cn030     2    18:09:22   Sun Mar 13 02:28:45

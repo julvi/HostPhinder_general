@@ -34,8 +34,8 @@ do
 
 done
 
-# Make table NB! THIS WILL WORK IF *tmp FILES ARE PROPERLY ORDERED BY ls
-paste *tmp | awk '{ for (i=1;i<=NF;i+=2) $i="" }1' | \
+# Make table 
+ls -v *.tmp| xargs paste | awk '{ for (i=1;i<=NF;i+=2) $i="" }1' | \
 perl -p -e 's/^ //' > ${input}_bt_acc
 #sed -i '1i10 20 30 40 50 60 70 80 90' ${input}_bt_acc 
 

@@ -1,4 +1,4 @@
-## Run in /home/projects/pr_phage/people/juliav/HP_general/eval_percentages
+## Run in /home/projects/pr_phage/people/juliav/HostPhinder_general/eval_percentages
 # Remove unnecessary info from id	pred	cov
 perl -pi -e 's/eval_percentages\/.+?\/.+?\.//g' *evalue0.05
 perl -pi -e 's/.fsa_.+?_pred_16mers_evalue0.05_host_sorted//g' *evalue0.05
@@ -7,28 +7,30 @@ perl -pi -e 's/.fsa_.+?_pred_16mers_evalue0.05_host_sorted//g' *evalue0.05
 # all % genome length
 # SPECIES Prepare table id	ann	pred10	pred20	pred40 ...
 awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_1871_species_150506.tab 10_16_species_alpha_coverage_evalue0.05 > tmp.10
-for p in `seq 20 10 90`; do awk -F '\t' 'FNR==NR{a[$1]=$2;next}($1 in a){print $0"\t"a[$1]}' ${p}_16_species_alpha_coverage_evalue0.05 tmp.$(($p-10)) > tmp.$p; done
-mv tmp.90 id_ann_pred102030405060708090_species.tsv
-
+for p in `seq 20 10 100`; do awk -F '\t' 'FNR==NR{a[$1]=$2;next}($1 in a){print $0"\t"a[$1]}' ${p}_16_species_alpha_coverage_evalue0.05 tmp.$(($p-10)) > tmp.$p; done
+mv tmp.100 id_ann_pred_from10to100_species.tsv
 
 # GENUS Prepare table id	ann	pred10	pred20	pred40 ...
 awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_2196_genus_150506.tab 10_16_genus_alpha_coverage_evalue0.05 > tmp.10
-for p in `seq 20 10 90`; do awk -F '\t' 'FNR==NR{a[$1]=$2;next}($1 in a){print $0"\t"a[$1]}' ${p}_16_genus_alpha_coverage_evalue0.05 tmp.$(($p-10)) > tmp.$p; done
-mv tmp.90 id_ann_pred102030405060708090_genus.tsv
-
+for p in `seq 20 10 100`; do awk -F '\t' 'FNR==NR{a[$1]=$2;next}($1 in a){print $0"\t"a[$1]}' ${p}_16_genus_alpha_coverage_evalue0.05 tmp.$(($p-10)) > tmp.$p; done
+mv tmp.100 id_ann_pred_from10to100_genus.tsv
+# Add last column for 100
 
 #1000 times resampling
-../scripts_gen/bootstrap_sem.sh -i id_ann_pred102030405060708090_species.tsv
+../scripts_gen/bootstrap_sem.sh -i id_ann_pred_from10to100_species.tsv	
 
-../scripts_gen/bootstrap_sem.sh -i id_ann_pred102030405060708090_genus.tsv
+../scripts_gen/bootstrap_sem.sh -i id_ann_pred_from10to100_genus.tsv
 
 
 
 ### Accuracy for individual % genome length ###
 #SPECIES
-for c in `seq 10 10 90`; do awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_1871_species_150506.tab ${c}_16_species_alpha_coverage_evalue0.05 > ${c}_ann_pred_species.tsv; done
-for c in `seq 10 10 90`; do ../scripts_gen/bootstrap_2col.sh -i ${c}_ann_pred_species.tsv >> accuracy_all_predictions_species; done
+for c in `seq 10 10 100`; do awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_1871_species_150506.tab ${c}_16_species_alpha_coverage_evalue0.05 > ${c}_ann_pred_species.tsv; done
 
+rm accuracy_all_predictions_species
+for c in `seq 10 10 100`; do ../scripts_gen/bootstrap_2col.sh -i ${c}_ann_pred_species.tsv >> accuracy_all_predictions_species; done
+
+# Add rows and colunms names
 # The following cmd works only with gnu awk version 4.1.0 
 #gawk -i inplace '{$1=++i*10 FS $1;}1' accuracy_all_predictions_species
 awk '{$1=++i*10 FS $1;}1' accuracy_all_predictions_species > tmp
@@ -36,23 +38,65 @@ mv tmp accuracy_all_predictions_species
 sed -i '1i Genome_length% mean ssd sem' accuracy_all_predictions_species
 
 #GENUS
-for c in `seq 10 10 90`; do awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_2196_genus_150506.tab ${c}_16_genus_alpha_coverage_evalue0.05 > ${c}_ann_pred_genus.tsv; done
-for c in `seq 10 10 90`; do ../scripts_gen/bootstrap_2col.sh -i ${c}_ann_pred_genus.tsv >> accuracy_all_predictions_genus; done
+for c in `seq 10 10 100`; do awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_2196_genus_150506.tab ${c}_16_genus_alpha_coverage_evalue0.05 > ${c}_ann_pred_genus.tsv; done
+
+rm accuracy_all_predictions_genus
+for c in `seq 10 10 100`; do ../scripts_gen/bootstrap_2col.sh -i ${c}_ann_pred_genus.tsv >> accuracy_all_predictions_genus; done
 
 awk '{$1=++i*10 FS $1;}1' accuracy_all_predictions_genus > tmp
 mv tmp accuracy_all_predictions_genus
 sed -i '1i Genome_length% mean ssd sem' accuracy_all_predictions_genus
 
-# Get # predictions BEWARE the files have to be listed properly
+## Get # predictions ##
+# SP
 nr_eval_sp=`wc -l ../groups/group1_species.list | awk '{print $1}'`
-for f in *species_alpha_coverage_evalue0.05; do wc -l $f; done | awk '{print $1}' | awk '{$1=++i*10 FS $1;}1' > tmp
-awk 'FNR==NR{a[$1]=$2;next}($1 in a){print $1" "a[$1]" "$2}' accuracy_all_predictions_species tmp > tmp2 
+
+for f in $(ls -v *species_alpha_coverage_evalue0.05); do wc -l $f; done \
+| awk '{print $1}' | awk '{$1=++i*10 FS $1;}1' > tmp
+
+awk 'FNR==NR{a[$1]=$2;next}($1 in a){print $1" "a[$1]" "$2}' \
+accuracy_all_predictions_species tmp > tmp2 
+
 awk -v d=$nr_eval_sp '{$(NF+1)=$NF/d*100}1' tmp2 > length_acc_nr_species
-sed -i '1i Genome_length% accuracy nr_predictions %prediction' length_acc_nr_species
 
+sed -i '1i Genome_length accuracy nr_predictions predictions' \
+length_acc_nr_species
+
+# GN
 nr_eval_gn=`wc -l ../groups/group1_genus.list | awk '{print $1}'`
-for f in *genus_alpha_coverage_evalue0.05; do wc -l $f; done | awk '{print $1}' | awk '{$1=++i*10 FS $1;}1' > tmp
-awk 'FNR==NR{a[$1]=$2;next}($1 in a){print $1" "a[$1]" "$2}' accuracy_all_predictions_genus tmp > tmp2 
-awk -v d=$nr_eval_gn '{$(NF+1)=$NF/d*100}1' tmp2 > length_acc_nr_genus
-sed -i '1i Genome_length% accuracy nr_predictions %prediction' length_acc_nr_genus
 
+for f in $(ls -v *genus_alpha_coverage_evalue0.05); do wc -l $f; done \
+| awk '{print $1}' | awk '{$1=++i*10 FS $1;}1' > tmp
+
+awk 'FNR==NR{a[$1]=$2;next}($1 in a){print $1" "a[$1]" "$2}' \
+accuracy_all_predictions_genus tmp > tmp2 
+
+awk -v d=$nr_eval_gn '{$(NF+1)=$NF/d*100}1' tmp2 > length_acc_nr_genus
+
+sed -i '1i Genome_length accuracy nr_predictions predictions' \
+length_acc_nr_genus
+
+
+###############################################################################
+# Solving unexpected problems
+###############################################################################
+## 20_16_species_alpha_coverage_evalue0.05 not present
+for f in 20/*species*sorted; do ../HostPhinder/scripts/get_host_alpha.py \
+-f $f -d coverage -a 6.0 -c FALSE | sed -n '1p' \
+>> 20_16_species_alpha_coverage_evalue0.05; done
+
+## 20_16_genus_alpha_coverage_evalue0.05 not terminated
+for f in 20/*genus*sorted; do ../HostPhinder/scripts/get_host_alpha.py \
+-f $f -d coverage -a 6.0 -c FALSE | sed -n '1p' \
+>> 20_16_genus_alpha_coverage_evalue0.05; done
+
+## Accuracy on evaluation set and 100 changes in the order of cents (digits)
+# Predictions and resulting coverage are exactly the same
+# Check if bootstrap_2col give another result
+scripts_gen/bootstrap_2col.sh -i evaluation/id_ann_pred_alpha_gn_gr1.tab
+# 0.813474 0.0205464 0.000649734
+
+scripts_gen/bootstrap_2col.sh -i eval_percentages/100_ann_pred_genus.tsv
+# 0.813474 0.0205464 0.000649734
+#
+# SAME the values on the manuscript refer to 100 resamplings
