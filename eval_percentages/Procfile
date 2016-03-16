@@ -10,25 +10,59 @@ awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_1
 for p in `seq 20 10 100`; do awk -F '\t' 'FNR==NR{a[$1]=$2;next}($1 in a){print $0"\t"a[$1]}' ${p}_16_species_alpha_coverage_evalue0.05 tmp.$(($p-10)) > tmp.$p; done
 mv tmp.100 id_ann_pred_from10to100_species.tsv
 
+# For 0.1, 1, 5 and 10
+awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_1871_species_150506.tab 0.1_16_species_alpha_coverage_evalue0.05 > tmp.0.1
+
+awk -F '\t' 'FNR==NR{a[$1]=$2;next}($1 in a){print $0"\t"a[$1]}' 1_16_species_alpha_coverage_evalue0.05 tmp.0.1 > tmp.1
+awk -F '\t' 'FNR==NR{a[$1]=$2;next}($1 in a){print $0"\t"a[$1]}' 5_16_species_alpha_coverage_evalue0.05 tmp.1 > tmp.5
+awk -F '\t' 'FNR==NR{a[$1]=$2;next}($1 in a){print $0"\t"a[$1]}' 10_16_species_alpha_coverage_evalue0.05 tmp.5 > tmp.10
+mv tmp.10 id_ann_pred_from0.1to10_species.tsv
+
+
+
 # GENUS Prepare table id	ann	pred10	pred20	pred40 ...
 awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_2196_genus_150506.tab 10_16_genus_alpha_coverage_evalue0.05 > tmp.10
 for p in `seq 20 10 100`; do awk -F '\t' 'FNR==NR{a[$1]=$2;next}($1 in a){print $0"\t"a[$1]}' ${p}_16_genus_alpha_coverage_evalue0.05 tmp.$(($p-10)) > tmp.$p; done
 mv tmp.100 id_ann_pred_from10to100_genus.tsv
-# Add last column for 100
+
+# For 0.1, 1, 5 and 10
+awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_2196_genus_150506.tab 0.1_16_genus_alpha_coverage_evalue0.05 > tmp.0.1
+
+awk -F '\t' 'FNR==NR{a[$1]=$2;next}($1 in a){print $0"\t"a[$1]}' 1_16_genus_alpha_coverage_evalue0.05 tmp.0.1 > tmp.1
+awk -F '\t' 'FNR==NR{a[$1]=$2;next}($1 in a){print $0"\t"a[$1]}' 5_16_genus_alpha_coverage_evalue0.05 tmp.1 > tmp.5
+awk -F '\t' 'FNR==NR{a[$1]=$2;next}($1 in a){print $0"\t"a[$1]}' 10_16_genus_alpha_coverage_evalue0.05 tmp.5 > tmp.10
+mv tmp.10 id_ann_pred_from0.1to10_genus.tsv
 
 #1000 times resampling
 ../scripts_gen/bootstrap_sem.sh -i id_ann_pred_from10to100_species.tsv	
+../scripts_gen/bootstrap_sem.sh -i id_ann_pred_from0.1to10_species.tsv	
 
 ../scripts_gen/bootstrap_sem.sh -i id_ann_pred_from10to100_genus.tsv
+../scripts_gen/bootstrap_sem.sh -i id_ann_pred_from0.1to10_genus.tsv
 
 
 
 ### Accuracy for individual % genome length ###
-#SPECIES
+## SPECIES
+## 10 to 100
 for c in `seq 10 10 100`; do awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_1871_species_150506.tab ${c}_16_species_alpha_coverage_evalue0.05 > ${c}_ann_pred_species.tsv; done
 
 rm accuracy_all_predictions_species
 for c in `seq 10 10 100`; do ../scripts_gen/bootstrap_2col.sh -i ${c}_ann_pred_species.tsv >> accuracy_all_predictions_species; done
+
+## 0.1 1 5 10
+for c in 0.1 1 5 10
+do
+    awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_1871_species_150506.tab ${c}_16_species_alpha_coverage_evalue0.05 > ${c}_ann_pred_species.tsv 
+done
+
+rm 0.1to10acc_all_pred_species
+for c in 0.1 1 5 10
+do 
+    ../scripts_gen/bootstrap_2col.sh -i ${c}_ann_pred_species.tsv \
+    >> 0.1to10acc_all_pred_species
+done
+
 
 # Add rows and colunms names
 # The following cmd works only with gnu awk version 4.1.0 
@@ -37,20 +71,52 @@ awk '{$1=++i*10 FS $1;}1' accuracy_all_predictions_species > tmp
 mv tmp accuracy_all_predictions_species
 sed -i '1i Genome_length% mean ssd sem' accuracy_all_predictions_species
 
-#GENUS
+
+### HOW TO ADD A COLUMN OF DIFFERENT VALUES?
+#awk '{$1=++i*10 FS $1;}1' 0.1to10acc_all_pred_species > tmp
+#mv tmp 0.1to10acc_all_pred_species
+sed -i '1i Genome_length% mean ssd sem' 0.1to10acc_all_pred_species
+
+
+
+
+
+
+## GENUS
 for c in `seq 10 10 100`; do awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_2196_genus_150506.tab ${c}_16_genus_alpha_coverage_evalue0.05 > ${c}_ann_pred_genus.tsv; done
 
 rm accuracy_all_predictions_genus
 for c in `seq 10 10 100`; do ../scripts_gen/bootstrap_2col.sh -i ${c}_ann_pred_genus.tsv >> accuracy_all_predictions_genus; done
 
+## 0.1 1 5 10
+for c in 0.1 1 5 10
+do
+    awk -F '\t' 'FNR==NR{a[$1]=$8;next}($1 in a){print $1"\t"a[$1]"\t"$2}' ../meta_2196_genus_150506.tab ${c}_16_genus_alpha_coverage_evalue0.05 > ${c}_ann_pred_genus.tsv 
+done
+
+rm 0.1to10acc_all_pred_genus
+for c in 0.1 1 5 10
+do 
+    ../scripts_gen/bootstrap_2col.sh -i ${c}_ann_pred_genus.tsv >> 0.1to10acc_all_pred_genus
+done
+
 awk '{$1=++i*10 FS $1;}1' accuracy_all_predictions_genus > tmp
 mv tmp accuracy_all_predictions_genus
 sed -i '1i Genome_length% mean ssd sem' accuracy_all_predictions_genus
+
+### HOW TO ADD A COLUMN OF DIFFERENT VALUES?
+#awk '{$1=++i*10 FS $1;}1' 0.1to10acc_all_pred_genus > tmp
+#mv tmp 0.1to10acc_all_pred_genus
+sed -i '1i Genome_length% mean ssd sem' 0.1to10acc_all_pred_genus
+
+
+
 
 ## Get # predictions ##
 # SP
 nr_eval_sp=`wc -l ../groups/group1_species.list | awk '{print $1}'`
 
+# 10 to 100
 for f in $(ls -v *species_alpha_coverage_evalue0.05); do wc -l $f; done \
 | awk '{print $1}' | awk '{$1=++i*10 FS $1;}1' > tmp
 
@@ -62,9 +128,24 @@ awk -v d=$nr_eval_sp '{$(NF+1)=$NF/d*100}1' tmp2 > length_acc_nr_species
 sed -i '1i Genome_length accuracy nr_predictions predictions' \
 length_acc_nr_species
 
+# 0.1 1 5 and 10
+for f in $(ls -v *species_alpha_coverage_evalue0.05 | head -4)
+do 
+    wc -l $f
+done | awk '{print $1}' > tmp # add first col manually see HOW TO ADD...
+
+awk 'FNR==NR{a[$1]=$2;next}($1 in a){print $1" "a[$1]" "$2}' \
+0.1to10acc_all_pred_species tmp > tmp2 
+
+awk -v d=$nr_eval_sp '{$(NF+1)=$NF/d*100}1' tmp2 > 0.1to10length_acc_nr_species
+
+sed -i '1i Genome_length accuracy nr_predictions predictions' \
+0.1to10length_acc_nr_species
+
 # GN
 nr_eval_gn=`wc -l ../groups/group1_genus.list | awk '{print $1}'`
 
+# 10 to 100
 for f in $(ls -v *genus_alpha_coverage_evalue0.05); do wc -l $f; done \
 | awk '{print $1}' | awk '{$1=++i*10 FS $1;}1' > tmp
 
@@ -76,6 +157,19 @@ awk -v d=$nr_eval_gn '{$(NF+1)=$NF/d*100}1' tmp2 > length_acc_nr_genus
 sed -i '1i Genome_length accuracy nr_predictions predictions' \
 length_acc_nr_genus
 
+# 0.1 1 5 and 10
+for f in $(ls -v *genus_alpha_coverage_evalue0.05 | head -4)
+do 
+    wc -l $f
+done | awk '{print $1}' > tmp # add first col manually see HOW TO ADD...
+
+awk 'FNR==NR{a[$1]=$2;next}($1 in a){print $1" "a[$1]" "$2}' \
+0.1to10acc_all_pred_genus tmp > tmp2 
+
+awk -v d=$nr_eval_sp '{$(NF+1)=$NF/d*100}1' tmp2 > 0.1to10length_acc_nr_genus
+
+sed -i '1i Genome_length accuracy nr_predictions predictions' \
+0.1to10length_acc_nr_genus
 
 ###############################################################################
 # Solving unexpected problems
@@ -100,3 +194,9 @@ scripts_gen/bootstrap_2col.sh -i eval_percentages/100_ann_pred_genus.tsv
 # 0.813474 0.0205464 0.000649734
 #
 # SAME the values on the manuscript refer to 100 resamplings
+
+## 10_16_species_alpha_coverage_evalue0.05 [neol] ends wrongly with Myc
+for f in 10/*species*sorted; do ../HostPhinder/scripts/get_host_alpha.py \
+-f $f -d coverage -a 6.0 -c FALSE | sed -n '1p' \
+>> 10_16_species_alpha_coverage_evalue0.05; done
+

@@ -2,6 +2,20 @@
 # Run HP on different percentage length of genome length (evaluation set)
 ###############################################################################
 
+# 5%, 1% and 0.1% species
+for i in 5 1 0.1
+do 
+    xmsub -W group_list=pr_phage -A pr_phage \
+    -l nodes=1:ppn=2,mem=10gb,walltime=1:00:00:00 \
+    -d /home/projects/pr_phage/people/juliav/HostPhinder_general \
+    -N HP_$i_sp \
+    -de -r y scripts_gen/run_wrap_HP_eval_varLength.sh \
+    -t species -p $i -o eval_percentages/$i; sleep 10;  
+done
+#929663              C 0             tor  48.95      1.0  -    juliav   juliav  risoe-r03-cn024     2     8:22:22   Wed Mar 16 01:51:32
+#929672              C 0             tor  48.93      1.0  -    juliav   juliav  risoe-r03-cn024     2     8:22:55   Wed Mar 16 01:52:05
+#929680              C 0             tor  48.96      1.0  -    juliav   juliav  risoe-r03-cn024     2     8:22:44   Wed Mar 16 01:52:38
+
 # 100% species
 xmsub -W group_list=pr_phage -A pr_phage \
 -l nodes=1:ppn=2,mem=10gb,walltime=1:00:00:00 \
@@ -54,3 +68,19 @@ xmsub -W group_list=pr_phage -A pr_phage \
 -de -r y scripts_gen/run_wrap_HP_eval_varLength.sh \
 -t genus -p 100 -o eval_percentages/100
 #864400              C 0             tor  47.58      1.0  -    juliav   juliav  risoe-r03-cn030     2    18:09:22   Sun Mar 13 02:28:45
+
+# 5%, 1% and 0.1% genus
+for i in 5 1 0.1
+do 
+    xmsub -W group_list=pr_phage -A pr_phage \
+    -l nodes=1:ppn=2,mem=10gb,walltime=1:00:00:00 \
+    -d /home/projects/pr_phage/people/juliav/HostPhinder_general \
+    -N HP_$i_gn \
+    -de -r y scripts_gen/run_wrap_HP_eval_varLength.sh \
+    -t genus -p $i -o eval_percentages/$i; sleep 10;  
+done
+#929742
+#
+#929751
+#
+#929753
