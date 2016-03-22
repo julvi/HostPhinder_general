@@ -1,5 +1,5 @@
 ###############################################################################
-# HostPhinder accuracy on percentages of genome length
+# HostPhinder accuracy on percentages of genome length COMMON predictions
 ###############################################################################
 setwd("/Users/juliavi/GoogleDrive/PhD/HostPhinder_general/HP_on_percentages")
 source("/Users/juliavi/HostPhinder/R_scripts/plot_table_funn_mean_ssd_sem.R")
@@ -33,7 +33,8 @@ setwd("/Users/juliavi/GoogleDrive/PhD/HostPhinder_general/HP_on_percentages")
 source("/Users/juliavi/HostPhinder/R_scripts/plot_table_funn_mean_ssd_sem.R")
 
 # read all files into list of tables
-lot <- lapply(c('length_acc_nr_species','length_acc_nr_genus'),
+lot <- lapply(c('length_acc_nr_species','length_acc_nr_genus',
+                '0.1to10length_acc_nr_genus', '0.1to10length_acc_nr_species'),
               myReadTable)
 
 
@@ -48,7 +49,7 @@ mybarplot <-function(mytable, graphtitle) {
   
   par(las=0)
   par(new=T)
-  plot(mytable$Genome_length, mytable$predictions, axes=F, ylim=c(0,100), 
+  plot(mytable$predictions, axes=F, ylim=c(0,100), 
        ylab = "", xlab="",lty=2, lwd=2)
   axis(4, ylim=c(0,100),lwd=1,line=1, las=1)
   lines(mytable$range, mytable$count,pch=20)
@@ -73,3 +74,8 @@ plot1 <- mybarplot(lot[[1]],
 plot2 <- mybarplot(lot[[2]], 
                    expression('Accuracy and % of Predictions, Phages'[eval_genus])) 
 #dev.off()
+
+plot3 <- mybarplot(lot[[3]], 
+                   expression('Accuracy and % of Predictions, Phages'[eval_species]))
+plot4 <- mybarplot(lot[[4]], 
+                   expression('Accuracy and % of Predictions, Phages'[eval_genus])) 

@@ -16,7 +16,7 @@ if (!require("RColorBrewer")) {
 
 ### B) Reading in data and transform it into matrix format
 
-setwd("~/GoogleDrive/PhD/HostPhinder_general/Argentina/heatmap")
+setwd("~/HostPhinder/heatmap/data")
 
 
 myReadTable<-function(mytablefile, rownamesfile, colnamesfile){

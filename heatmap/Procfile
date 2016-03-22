@@ -1,0 +1,48 @@
+# Obtain lists of species and genera to download taxonomy on ass
+awk '{$NF="";print $0}' ann_sp_col_names_complete > species.list
+awk '{$NF="";print $0}' ann_gn_col_names_complete > genera.list
+
+# Sort the ann vs pred matrix according to the tax order
+awk -F '\t' 'FNR == NR { lineno[$3] = NR; next}
+     {print lineno[$1], $0;}' species.tax ann_vs_pred_compl_109sp_151222.tsv | sort -k 1,1n | cut -d' ' -f2-
+# Phormidium foveolarum and Leptolyngbya foveolarum are the same
+
+# In species Clostridium difficile has been changed to 
+# Peptoclostridium difficile by NCBI taxonmy (now changed back)
+# Gordonia rubropertincta has been correcte to Gordonia rubripertincta
+
+# Need to sort also columns
+
+# Sort list according to taxonomy
+awk -F '\t' '{print $3}' species.tax > heatmapTaxSorted_species109.list
+awk -F '\t' '{print $2}' genus.tax > heatmapTaxSorted_genus76.list
+
+# Make new matrix with sorted hosts
+./ann_vs_pred_complete_matrix.py -l heatmapTaxSorted_species109.list \
+-t species > ann_vs_pred_compl_109sp_taxSorted.tsv
+./ann_vs_pred_complete_matrix.py -l heatmapTaxSorted_genus76.list -t genus \
+> ann_vs_pred_compl_76gn_taxSorted.tsv
+ 
+# Column and row names need also to be changed
+# ann_gn_col_names_complete ann_gn_row_names_complete ann_sp_col_names_complete ann_sp_row_names_complete
+# Substitute last space to tab --> will help me separating name from number
+# on vi
+# First remove eventual trailing spaces
+:%s/\s\+$//
+:%s/.*\zs/\t/
+
+awk -F '\t' 'FNR == NR { lineno[$3] = NR; next}
+     {print lineno[$1], $0;}' species.tax ann_sp_col_names_complete | sort -k 1,1n | cut -d' ' -f2- > ann_sp_col_names_compl_taxSorted
+
+awk -F '\t' 'FNR == NR { lineno[$3] = NR; next}
+     {print lineno[$1], $0;}' species.tax ann_sp_row_names_complete | sort -k 1,1n | cut -d' ' -f2- > ann_sp_row_names_compl_taxSorted
+
+awk -F '\t' 'FNR == NR { lineno[$2] = NR; next}
+     {print lineno[$1], $0;}' genus.tax ann_gn_col_names_complete | sort -k 1,1n | cut -d' ' -f2- > ann_gn_col_names_compl_taxSorted
+
+awk -F '\t' 'FNR == NR { lineno[$2] = NR; next}
+     {print lineno[$1], $0;}' genus.tax ann_gn_row_names_complete | sort -k 1,1n | cut -d' ' -f2- > ann_gn_row_names_compl_taxSorted
+
+
+# Re-substitute the tab to space in ann_sp_col_names_compl_taxSorted and ann_sp_row_names_compl_taxSorted
+:%s/\t/ /
