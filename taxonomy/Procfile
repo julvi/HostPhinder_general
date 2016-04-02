@@ -1,0 +1,12 @@
+# Build tax docker image
+docker build -t tax .
+
+# Run tax container
+./rundocker.sh
+
+### On Docker container ###
+# Update taxonomy --> only first time
+./updateNCBItax.py
+# Run
+./get_lineages.sh -i input/species.list > output/species.tax
+./get_lineages.sh -i input/genus.list > output/genus.tax
